@@ -1,0 +1,43 @@
+# ── Secrets & env ─────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Python ────────────────────────────────────────────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Tooling caches ────────────────────────────────────────────────────────────
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Local data (synthetic allowed, but exclude raw Synthea dumps) ─────────────
+data/synthea_raw/
+data/hapi/
+
+# ── Copyrighted reference PDFs (cite DOI in docs; don't redistribute) ─────────
+*.pdf
+
+# ── Internal project brief (keep private; public docs live in docs/ + README) ─
+CLAUDE.md
