@@ -36,6 +36,179 @@ inputs.
 
 ---
 
+## Architecture — what runs where
+
+The whole system lives on **one VM** (`pranathi.b691.us`). On that VM there
+are three Docker containers and one nginx process:
+
+```
+                 Internet  (Prompt Opinion, your curl, browsers)
+                     │
+                     │  HTTPS  (Let's Encrypt cert)
+                     ▼
+        ┌────────────────────────────────────────┐
+        │  nginx          (host process)         │  ← terminates TLS,
+        │   :80, :443                            │    routes by URL path
+        └─────────────────┬──────────────────────┘
+                          │  http://localhost:8002
+                          ▼
+        ┌────────────────────────────────────────┐
+        │  critcom-agent  (Docker container)     │  ← your AI agent
+        │  ADK + LLM, listens on :8001 inside    │    (Gemini-driven,
+        │  the container, mapped to host :8002   │     7 tools)
+        └────────┬───────────────────┬───────────┘
+                 │                   │
+                 │  docker network   │  docker network
+                 ▼                   ▼
+        ┌──────────────────┐  ┌──────────────────┐
+        │  critcom-hapi    │  │  critcom-orthanc │
+        │  HAPI FHIR       │  │  DICOM server    │
+        │  (medical data)  │  │  (imaging meta)  │
+        │  :8080 internal  │  │  :8042 + :4242   │
+        └──────────────────┘  └──────────────────┘
+```
+
+**Plain-English version of the same diagram:**
+
+- The **agent** is the only thing the outside world ever talks to.
+- **HAPI** is the agent's private medical-records database. Nobody outside
+  the VM can reach it directly; the agent reaches it over the internal
+  Docker network.
+- **Orthanc** is the agent's private DICOM/imaging database. Same deal —
+  internal only.
+- **nginx** is the front door: it owns the public domain and the HTTPS cert,
+  and it forwards anything matching `https://pranathi.b691.us/critcom/*`
+  down to the agent container on `localhost:8002`. nginx exists because:
+  Prompt Opinion requires HTTPS, the VM hosts other apps that need to share
+  the same domain, and `https://…/critcom/` is friendlier than
+  `http://149.165.238.74:8002`.
+
+### Public vs. internal addresses
+
+| Address | Used by |
+|---|---|
+| `https://pranathi.b691.us/critcom/` | Prompt Opinion, your curl, browsers — the **only** public entry |
+| `http://localhost:8002` (on the VM) | nginx, when forwarding requests to the agent |
+| `http://hapi-fhir:8080/fhir` | The agent itself, from inside the Docker network |
+| `http://orthanc:8042` | The agent itself, from inside the Docker network |
+| `http://localhost:8081/fhir` (on the VM) | You, when SSH'd into the VM and poking around HAPI manually |
+
+Containers refer to each other by **service name** (`hapi-fhir`, `orthanc`,
+`critcom-agent`) — that's why the agent's `.env` says
+`CRITCOM_FHIR_BASE_URL=http://hapi-fhir:8080/fhir` and not `localhost`.
+
+### Local dev is the same shape, minus nginx
+
+When you run `docker compose up` on your laptop, you get the three
+containers but no nginx and no HTTPS. You hit the agent directly at
+`http://localhost:8002`. Same code, same wiring, just no public layer.
+
+---
+
+## What happens when you call the agent
+
+A worked example: you POST `"Process DiagnosticReport dr-001"` to the agent.
+
+```
+You / Prompt Opinion
+        │  POST https://pranathi.b691.us/critcom/
+        │  body: A2A JSON-RPC "message/send"
+        ▼
+nginx → critcom-agent
+        │
+        │  ADK runtime hands the message to the LLM (Gemini 2.5 Flash Lite)
+        │  along with the system prompt and the 7 available tools.
+        ▼
+LLM decides: "I need to fetch the report first."
+        │
+        ▼
+TOOL 1: fetch_report_fhir_tool({"diagnostic_report_id": "dr-001"})
+        │
+        │  → Agent calls HAPI: GET http://hapi-fhir:8080/fhir/DiagnosticReport/dr-001
+        │  → HAPI returns the resource
+        │  → Tool normalizes it into a CritComStudy:
+        │       { acr_category: "Cat1",
+        │         service_request_id: "sr-001",
+        │         patient_id: "patient-001",
+        │         report_text: "TYPE A AORTIC DISSECTION ..." }
+        │
+        ▼
+LLM sees acr_category = "Cat1" → critical, must continue.
+        │
+        ▼
+TOOL 2: resolve_provider_tool({"service_request_id": "sr-001"})
+        │
+        │  → Agent calls HAPI: GET ServiceRequest/sr-001
+        │  → Reads .requester → Practitioner/practitioner-001
+        │  → Fetches that Practitioner + their PractitionerRole
+        │  → Returns: Dr. Michael Wei Chen, phone, pager, email
+        │
+        ▼
+TOOL 3: dispatch_communication_tool({...})
+        │
+        │  → Agent BUILDS a FHIR Communication resource:
+        │       status="in-progress", category="Cat1",
+        │       subject=Patient/patient-001,
+        │       about=ServiceRequest/sr-001,
+        │       recipient=Practitioner/practitioner-001,
+        │       sent=<now>, payload=<finding text>
+        │  → Agent POSTs it to HAPI: POST /Communication
+        │  → HAPI assigns ID 1017 and persists to disk
+        │  → Tool returns: {communication_id: "1017", sent: "..."}
+        │
+        ▼
+TOOL 4: track_acknowledgment_tool({"action": "create",
+                                    "communication_id": "1017",
+                                    "timeout_minutes": 60, ...})
+        │
+        │  → Agent BUILDS a FHIR Task:
+        │       status="requested",
+        │       focus=Communication/1017,
+        │       owner=Practitioner/practitioner-001,
+        │       restriction.period.end=<now + 60 minutes>
+        │  → Agent POSTs it to HAPI: POST /Task
+        │  → HAPI assigns ID 1018 and persists
+        │  → Tool returns: {task_id: "1018", deadline: "..."}
+        │
+        ▼
+LLM sees all four tools succeeded.
+        │
+        ▼
+Agent responds with a natural-language summary of what it did,
+plus the full machine-readable history of every tool call and return.
+```
+
+### What you'd see in HAPI afterwards
+
+Two new resources, persistent on the VM disk:
+
+```bash
+# The notification record
+curl http://localhost:8081/fhir/Communication/1017
+#  → category Cat1, recipient practitioner-001, payload = the finding text
+
+# The acknowledgment-tracking task with the 60-minute Cat1 deadline
+curl http://localhost:8081/fhir/Task/1018
+#  → status requested, owner practitioner-001,
+#     restriction.period.end = sent + 60 min
+```
+
+If 60 minutes pass without acknowledgment, the next call to the agent
+(`"Check Task 1018"`) would invoke `track_acknowledgment_tool` with
+`action="check"`, see the deadline has passed, and call `escalate_tool` —
+which marks Task 1018 failed, resolves the on-call provider
+(`practitioner-oncall-001`), and creates a fresh Communication + Task
+for them.
+
+### Where the LLM fits
+
+The LLM **does not** invent medical facts, IDs, or contact info. It only
+decides *which tool to call next* based on the data the previous tool
+returned. Every fact in the final FHIR record came from a deterministic
+tool reading FHIR/DICOM. The LLM is the dispatcher; the tools are the truth.
+
+---
+
 ## Local development
 
 ### 1. Clone and configure
