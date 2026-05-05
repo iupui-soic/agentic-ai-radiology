@@ -18,21 +18,67 @@ The agent is live at **`https://pranathi.b691.us/critcom`**.
 ```bash
 # 1. Read the public agent card (A2A discovery)
 curl https://pranathi.b691.us/critcom/.well-known/agent-card.json
-
-# 2. Send the agent a real task (full tool chain runs against live HAPI FHIR)
-curl -X POST https://pranathi.b691.us/critcom/ \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jsonrpc":"2.0","id":"1","method":"message/send",
-    "params":{"message":{"role":"user","messageId":"m1",
-      "parts":[{"kind":"text","text":"Process DiagnosticReport dr-001"}]}}
-  }'
 ```
 
-The response shows every tool the agent invoked, with arguments and return
-values, plus the final natural-language summary. Seed reports `dr-001` (Cat1
-aortic dissection), `dr-002` (Cat1 PE), and `dr-003` (Cat1 ICH) are all valid
-inputs.
+Then run any of the demo scenarios below. Each is a single curl that produces
+a complete tool trace plus a natural-language summary in the response.
+
+### Demo scenarios
+
+```bash
+# A. Cat1 critical finding — full pipeline (fetch → resolve → dispatch → track)
+curl -X POST https://pranathi.b691.us/critcom/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"1","method":"message/send",
+       "params":{"message":{"role":"user","messageId":"m1",
+         "parts":[{"kind":"text","text":"Process DiagnosticReport dr-001"}]}}}'
+# → fetches Type A aortic dissection, dispatches to Dr. Chen,
+#   opens Task with 60-min Cat1 deadline.
+
+# B. Cat3 routine finding — agent should STOP (no critical comm needed)
+curl -X POST https://pranathi.b691.us/critcom/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"2","method":"message/send",
+       "params":{"message":{"role":"user","messageId":"m2",
+         "parts":[{"kind":"text","text":"Process DiagnosticReport dr-004"}]}}}'
+# → "ACR category Cat3, no critical communication needed."
+
+# C. DICOM fallback path — query the modality worklist
+curl -X POST https://pranathi.b691.us/critcom/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"3","method":"message/send",
+       "params":{"message":{"role":"user","messageId":"m3",
+         "parts":[{"kind":"text","text":"Use the DICOM worklist to fetch the study with accession_number ACC0001."}]}}}'
+# → returns full study metadata via DICOM C-FIND against Orthanc.
+
+# D. Escalation — ack timer expired, agent escalates to on-call
+curl -X POST https://pranathi.b691.us/critcom/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"4","method":"message/send",
+       "params":{"message":{"role":"user","messageId":"m4",
+         "parts":[{"kind":"text","text":"Check the acknowledgment status of Task task-overdue-001. If it is overdue and not yet acknowledged, escalate it. The original case was service_request_id sr-002, patient_id patient-002, ACR category Cat2, finding summary: Acute pulmonary emboli involving segmental and subsegmental branches of the right lower lobe pulmonary artery. The escalation timeout should be 1440 minutes."}]}}}'
+# → marks the old Task failed, dispatches a new Communication
+#   to on-call Dr. Reyes, opens a fresh 24h Task.
+
+# E. Audit trail — full Communication + Task history for a case
+curl -X POST https://pranathi.b691.us/critcom/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"5","method":"message/send",
+       "params":{"message":{"role":"user","messageId":"m5",
+         "parts":[{"kind":"text","text":"Use query_audit_tool to return the full Communication and Task history for service_request_id sr-002."}]}}}'
+# → returns every Communication and Task linked to that case.
+```
+
+### Seed data available for demos
+
+| ID | Patient | Finding | ACR | Used in |
+|---|---|---|---|---|
+| `dr-001` | Robert Kowalski | Type A aortic dissection | Cat1 | A |
+| `dr-002` | Linh Nguyen | Subsegmental PE | Cat2 | (tied to escalation D/E) |
+| `dr-003` | Dorothy Williams | Hypertensive ICH | Cat1 | (Cat1 alt) |
+| `dr-004` | Eleanor Goldberg | Stable cholelithiasis | Cat3 | B |
+| `ACC0001`–`ACC0003` | (DICOM worklist) | scheduled CT | n/a | C |
+| `task-overdue-001` | (overdue ack for sr-002) | — | — | D, E |
 
 ---
 
