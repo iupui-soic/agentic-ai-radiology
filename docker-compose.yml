@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   hapi-fhir:
     image: hapiproject/hapi:latest
@@ -11,11 +9,9 @@ services:
       hapi.fhir.allow_external_references: "true"
     volumes:
       - hapi-data:/data/hapi
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
+    # NOTE: hapiproject/hapi is distroless — no shell, no curl/wget. We can't
+    # exec a healthcheck inside the container. The agent uses tenacity retries
+    # against FHIR, so depends_on: condition: service_started is sufficient.
 
   orthanc:
     image: orthancteam/orthanc:latest
@@ -50,7 +46,7 @@ services:
       CRITCOM_ORTHANC_URL: http://orthanc:8042
     depends_on:
       hapi-fhir:
-        condition: service_healthy
+        condition: service_started
       orthanc:
         condition: service_started
 
