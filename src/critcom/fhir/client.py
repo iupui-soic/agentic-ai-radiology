@@ -200,7 +200,7 @@ class FHIRClient:
     # ------------------------------------------------------------------
 
     async def create_communication(self, comm: Communication) -> Communication:
-        data = await self._post("/Communication", comm.model_dump(exclude_none=True, by_alias=True))
+        data = await self._post("/Communication", comm.model_dump(mode="json", exclude_none=True, by_alias=True))
         return Communication.model_validate(data)
 
     async def get_communication(self, resource_id: str) -> Communication:
@@ -220,7 +220,7 @@ class FHIRClient:
     # ------------------------------------------------------------------
 
     async def create_task(self, task: Task) -> Task:
-        data = await self._post("/Task", task.model_dump(exclude_none=True, by_alias=True))
+        data = await self._post("/Task", task.model_dump(mode="json", exclude_none=True, by_alias=True))
         return Task.model_validate(data)
 
     async def get_task(self, resource_id: str) -> Task:
@@ -230,7 +230,7 @@ class FHIRClient:
     async def update_task_status(self, resource_id: str, status: TaskStatus) -> Task:
         task = await self.get_task(resource_id)
         task.status = status
-        data = await self._put(f"/Task/{resource_id}", task.model_dump(exclude_none=True, by_alias=True))
+        data = await self._put(f"/Task/{resource_id}", task.model_dump(mode="json", exclude_none=True, by_alias=True))
         return Task.model_validate(data)
 
     async def search_tasks_for_communication(self, communication_id: str) -> list[Task]:
@@ -268,11 +268,11 @@ class FHIRClient:
 
         if service_request_id:
             comms = await self.search_communications(service_request_id)
-            result["communications"] = [c.model_dump() for c in comms]
+            result["communications"] = [c.model_dump(mode="json") for c in comms]
             for c in comms:
                 if c.id:
                     tasks = await self.search_tasks_for_communication(c.id)
-                    result["tasks"].extend(t.model_dump() for t in tasks)
+                    result["tasks"].extend(t.model_dump(mode="json") for t in tasks)
 
         return result
 
