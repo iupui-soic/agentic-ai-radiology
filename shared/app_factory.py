@@ -8,8 +8,8 @@ Mirrors po-adk-python/shared/app_factory.py.
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
+from urllib.parse import urlparse
 
 from shared.middleware import ApiKeyMiddleware
 
@@ -31,23 +31,34 @@ def create_a2a_app(
     so that the agent code can still be imported and unit-tested without ADK.
     """
     try:
-        from google.adk.a2a import to_a2a  # type: ignore
-    except ImportError:
-        try:
-            from google.adk.runtime.a2a import to_a2a  # type: ignore
-        except ImportError:
-            logger.warning("google-adk a2a not available — using stub app")
-            return _stub_app(name, description, url, version, fhir_extension_uri, require_api_key)
+        from a2a.types import AgentCapabilities, AgentCard
+        from google.adk.a2a.utils.agent_to_a2a import to_a2a
+    except ImportError as e:
+        logger.warning("google-adk a2a not available (%s) — using stub app", e)
+        return _stub_app(name, description, url, version, fhir_extension_uri, require_api_key)
 
-    app = to_a2a(
-        agent,
-        name=name,
-        description=description,
-        url=url,
-        version=version,
-    )
+    parsed = urlparse(url)
+    host = parsed.hostname or "0.0.0.0"
+    port = parsed.port or (443 if parsed.scheme == "https" else 8001)
 
-    # Attach middleware
+    card_data: dict[str, Any] = {
+        "name": name,
+        "description": description,
+        "url": url,
+        "version": version,
+        "capabilities": AgentCapabilities(streaming=True),
+        "default_input_modes": ["text/plain"],
+        "default_output_modes": ["text/plain"],
+        "skills": [],
+    }
+    if require_api_key:
+        card_data["security_schemes"] = {
+            "ApiKeyAuth": {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+        }
+        card_data["security"] = [{"ApiKeyAuth": []}]
+    agent_card = AgentCard(**card_data)
+
+    app = to_a2a(agent, host=host, port=port, agent_card=agent_card)
     app.add_middleware(ApiKeyMiddleware, require_api_key=require_api_key)
     return app
 
