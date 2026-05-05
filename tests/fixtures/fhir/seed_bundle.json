@@ -746,6 +746,203 @@
         "method": "PUT",
         "url": "DiagnosticReport/dr-003"
       }
+    },
+    {
+      "fullUrl": "urn:uuid:patient-004",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-004",
+        "name": [
+          {
+            "use": "official",
+            "family": "Goldberg",
+            "given": ["Eleanor", "Susan"]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1955-09-12",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-0455",
+            "use": "home"
+          }
+        ],
+        "address": [
+          {
+            "use": "home",
+            "city": "Indianapolis",
+            "state": "IN",
+            "postalCode": "46220"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-004"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:sr-004",
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "sr-004",
+        "status": "active",
+        "intent": "order",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "30811-7",
+              "display": "CT Abdomen and Pelvis with contrast"
+            }
+          ],
+          "text": "CT Abdomen/Pelvis with contrast — follow-up"
+        },
+        "subject": {
+          "reference": "Patient/patient-004"
+        },
+        "requester": {
+          "reference": "Practitioner/practitioner-001",
+          "display": "Dr. Michael Chen"
+        },
+        "reasonCode": [
+          {
+            "text": "Routine 6-month follow-up of known cholelithiasis. No new symptoms."
+          }
+        ],
+        "priority": "routine"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ServiceRequest/sr-004"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:dr-004",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-004",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11522-0",
+              "display": "Radiology report"
+            }
+          ],
+          "text": "CT Abdomen/Pelvis with contrast"
+        },
+        "subject": {
+          "reference": "Patient/patient-004"
+        },
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/sr-004"
+          }
+        ],
+        "performer": [
+          {
+            "reference": "Practitioner/practitioner-001"
+          }
+        ],
+        "issued": "2026-05-03T11:15:00+00:00",
+        "conclusion": ":\n1. Stable cholelithiasis without evidence of acute cholecystitis. Gallbladder wall is non-thickened; no pericholecystic fluid.\n2. No acute findings. No new lesions identified compared to prior study.\n3. Routine clinical follow-up. No critical communication required.",
+        "extension": [
+          {
+            "url": "http://critcom/StructureDefinition/acr-category",
+            "valueCode": "Cat3"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/dr-004"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:comm-historical-001",
+      "resource": {
+        "resourceType": "Communication",
+        "id": "comm-historical-001",
+        "status": "in-progress",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://critcom/acr-category",
+                "code": "Cat2"
+              }
+            ],
+            "text": "Cat2"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/patient-002"
+        },
+        "about": [
+          {
+            "reference": "ServiceRequest/sr-002"
+          }
+        ],
+        "recipient": [
+          {
+            "reference": "Practitioner/practitioner-002"
+          }
+        ],
+        "sent": "2026-05-04T05:00:00+00:00",
+        "payload": [
+          {
+            "contentString": "Acute pulmonary emboli involving segmental and subsegmental branches of the right lower lobe pulmonary artery. Non-massive PE without right heart strain."
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Communication/comm-historical-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:task-overdue-001",
+      "resource": {
+        "resourceType": "Task",
+        "id": "task-overdue-001",
+        "status": "requested",
+        "intent": "order",
+        "priority": "stat",
+        "code": {
+          "coding": [
+            {
+              "system": "http://critcom/task-type",
+              "code": "critical-result-ack"
+            }
+          ],
+          "text": "Critical result acknowledgment"
+        },
+        "focus": {
+          "reference": "Communication/comm-historical-001"
+        },
+        "for": {
+          "reference": "Patient/patient-002"
+        },
+        "authoredOn": "2026-05-04T05:00:00+00:00",
+        "lastModified": "2026-05-04T05:00:00+00:00",
+        "owner": {
+          "reference": "Practitioner/practitioner-002"
+        },
+        "restriction": {
+          "repetitions": 1,
+          "period": {
+            "start": "2026-05-04T05:00:00+00:00",
+            "end": "2026-05-05T05:00:00+00:00"
+          }
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Task/task-overdue-001"
+      }
     }
   ]
 }
