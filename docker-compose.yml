@@ -29,6 +29,11 @@ services:
       ORTHANC__WORKLISTS__ENABLE: "true"
       ORTHANC__WORKLISTS__DATABASE: "/var/lib/orthanc/worklists"
       ORTHANC__WORKLISTS__FILTER_ISSUER_AET: "false"
+      # Allow the CritCom agent (and any client) to C-FIND against the worklist
+      # without pre-registering each AET. Worklist queries are read-only and
+      # this stays inside the docker network.
+      ORTHANC__DICOM_ALWAYS_ALLOW_FIND: "true"
+      ORTHANC__DICOM_ALWAYS_ALLOW_FIND_WORKLIST: "true"
     volumes:
       - orthanc-data:/var/lib/orthanc/db
       - ./orthanc-worklists:/var/lib/orthanc/worklists
