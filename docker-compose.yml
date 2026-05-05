@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  hapi-fhir:
+    image: hapiproject/hapi:latest
+    container_name: critcom-hapi
+    ports:
+      - "8080:8080"
+    environment:
+      hapi.fhir.fhir_version: R4
+      hapi.fhir.allow_external_references: "true"
+    volumes:
+      - hapi-data:/data/hapi
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/fhir/metadata"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  orthanc:
+    image: orthancteam/orthanc:latest
+    container_name: critcom-orthanc
+    ports:
+      - "8042:8042"   # REST + UI
+      - "4242:4242"   # DICOM
+    environment:
+      ORTHANC__NAME: "CritCom Orthanc"
+      ORTHANC__REGISTERED_USERS: |
+        {"orthanc": "orthanc"}
+      ORTHANC__DICOM_AET: "ORTHANC"
+      ORTHANC__WORKLISTS__ENABLE: "true"
+      ORTHANC__WORKLISTS__DATABASE: "/var/lib/orthanc/worklists"
+      ORTHANC__WORKLISTS__FILTER_ISSUER_AET: "false"
+    volumes:
+      - orthanc-data:/var/lib/orthanc/db
+      - ./orthanc-worklists:/var/lib/orthanc/worklists
+
+  critcom-agent:
+    build: .
+    container_name: critcom-agent
+    ports:
+      - "8001:8001"
+    env_file: .env
+    environment:
+      AGENT_MODULE: critcom_agent.app:a2a_app
+      PORT: 8001
+      CRITCOM_FHIR_BASE_URL: http://hapi-fhir:8080/fhir
+      CRITCOM_DICOM_HOST: orthanc
+      CRITCOM_DICOM_PORT: 4242
+      CRITCOM_ORTHANC_URL: http://orthanc:8042
+    depends_on:
+      hapi-fhir:
+        condition: service_healthy
+      orthanc:
+        condition: service_started
+
+volumes:
+  hapi-data:
+  orthanc-data:
