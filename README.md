@@ -477,6 +477,40 @@ bind-mounted — `restart` alone won't pick up code changes.
 
 ---
 
+## Roadmap / possible enhancements
+
+Things that would make the system feel more production-grade. None are required
+for the current submission scope.
+
+- **Real DICOM images from TCIA.** Pull a handful of anonymized chest CTs from
+  [The Cancer Imaging Archive](https://www.cancerimagingarchive.net/) and push
+  them into Orthanc as completed studies, with the synthetic `.wl` worklist
+  entries updated to reference those real study UIDs. Adds visual flair for
+  demos. Note: Modality Worklist data itself is per-hospital operational state
+  and isn't publicly distributed, so the synthetic worklist generation has to
+  stay regardless.
+- **Synthea-generated patients.** Use [Synthea](https://github.com/synthetichealth/synthea)
+  to seed 50–100 synthetic patients with full longitudinal FHIR histories
+  (demographics, prior conditions, meds). Lets the agent operate against a
+  realistic-sized chart, not just 4 curated patients.
+- **Modality variety.** Today all seed cases are CT. Add an MRI brain (acute
+  stroke alert) and an ultrasound (ruptured AAA) to demonstrate the agent
+  isn't modality-specific.
+- **Real notification channels.** `dispatch_communication` writes a FHIR
+  `Communication` today but doesn't actually send anything. Wire in Twilio
+  (SMS), a hospital paging API, or Direct secure email so notifications
+  reach the recipient out-of-band. The audit trail already exists; this is
+  purely a transport layer.
+- **Outcome metrics dashboard.** Time-to-acknowledgment, escalation rate by
+  category, by service line, etc. — all derivable from the existing FHIR
+  Communication + Task records via standard FHIR search.
+- **Acknowledgment via inbound A2A.** Today the only way to mark a Task
+  completed is calling `track_acknowledgment(action=mark_acknowledged)`
+  through the agent. A small inbound webhook (or a "respond" message from
+  the recipient's own agent) would close the loop end-to-end.
+
+---
+
 ## Branches
 
 - `main` — submission baseline
