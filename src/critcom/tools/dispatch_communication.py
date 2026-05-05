@@ -54,6 +54,7 @@ async def run(arguments: dict[str, Any]) -> dict[str, Any]:
             )
         ],
         subject=Reference(reference=f"Patient/{arguments['patient_id']}"),
+        basedOn=[Reference(reference=f"ServiceRequest/{arguments['service_request_id']}")],
         about=[Reference(reference=f"ServiceRequest/{arguments['service_request_id']}")],
         recipient=[Reference(reference=f"Practitioner/{arguments['recipient_practitioner_id']}")],
         sent=datetime.now(tz=timezone.utc),

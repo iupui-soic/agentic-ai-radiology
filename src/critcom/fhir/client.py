@@ -210,7 +210,7 @@ class FHIRClient:
     async def search_communications(self, service_request_id: str) -> list[Communication]:
         data = await self._get(
             "/Communication",
-            params={"about": f"ServiceRequest/{service_request_id}", "_sort": "-sent"},
+            params={"based-on": f"ServiceRequest/{service_request_id}", "_sort": "-sent"},
         )
         bundle = Bundle.model_validate(data)
         return [Communication.model_validate(e.resource) for e in bundle.entry if e.resource]

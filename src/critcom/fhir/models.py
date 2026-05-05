@@ -264,7 +264,13 @@ class Communication(BaseModel):
     status: CommunicationStatus = CommunicationStatus.IN_PROGRESS
     category: list[CodeableConcept] = Field(default_factory=list)
     subject: Reference | None = None          # → Patient
-    about: list[Reference] = Field(default_factory=list)   # → ServiceRequest
+    # FHIR R4 distinguishes:
+    #   basedOn: the request fulfilled by this communication (searchable as `based-on`)
+    #   about:   topical references (NOT a default HAPI search parameter)
+    # We populate both with the originating ServiceRequest so query_audit can
+    # search by `based-on` and clients can also see the topical link.
+    basedOn: list[Reference] = Field(default_factory=list)  # → ServiceRequest
+    about: list[Reference] = Field(default_factory=list)    # → ServiceRequest
     recipient: list[Reference] = Field(default_factory=list)
     sender: Reference | None = None
     sent: datetime | None = None

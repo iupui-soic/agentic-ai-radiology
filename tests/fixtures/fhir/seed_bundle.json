@@ -881,6 +881,11 @@
         "subject": {
           "reference": "Patient/patient-002"
         },
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/sr-002"
+          }
+        ],
         "about": [
           {
             "reference": "ServiceRequest/sr-002"
