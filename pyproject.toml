@@ -46,4 +46,5 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-markers = ["llm: tests that call a real LLM (skipped by default)"]
+addopts = "-m 'not llm'"
+markers = ["llm: tests that call a real LLM (skipped by default; run with -m llm)"]
