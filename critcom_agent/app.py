@@ -26,6 +26,25 @@ CRITCOM_FHIR_EXTENSION_URI = os.getenv(
 )
 REQUIRE_API_KEY = os.getenv("CRITCOM_REQUIRE_API_KEY", "true").lower() == "true"
 
+SKILLS = [
+    {
+        "id": "process_critical_finding",
+        "name": "Process critical radiology finding",
+        "description": (
+            "Given a signed DiagnosticReport or DICOM accession, classifies the "
+            "ACR criticality (Cat1/Cat2/Cat3), resolves the ordering provider, "
+            "dispatches a notification, opens a FHIR Task, and escalates to "
+            "on-call if the acknowledgment window expires."
+        ),
+        "tags": ["radiology", "critical-results", "fhir", "acr", "communication"],
+        "examples": [
+            "Process DiagnosticReport dr-001 and notify the ordering physician.",
+            "Check the acknowledgment status of Task task-abc and escalate if overdue.",
+            "Show the audit history for ServiceRequest sr-002.",
+        ],
+    },
+]
+
 a2a_app = create_a2a_app(
     agent=root_agent,
     name="CritCom",
@@ -39,4 +58,5 @@ a2a_app = create_a2a_app(
     version="0.1.0",
     fhir_extension_uri=CRITCOM_FHIR_EXTENSION_URI,
     require_api_key=REQUIRE_API_KEY,
+    skills=SKILLS,
 )

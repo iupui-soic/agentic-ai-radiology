@@ -24,6 +24,7 @@ def create_a2a_app(
     version: str = "0.1.0",
     fhir_extension_uri: str | None = None,
     require_api_key: bool = True,
+    skills: list[dict[str, Any]] | None = None,
 ) -> Any:
     """Build the A2A ASGI app. Returns a Starlette app.
 
@@ -31,16 +32,17 @@ def create_a2a_app(
     so that the agent code can still be imported and unit-tested without ADK.
     """
     try:
-        from a2a.types import AgentCapabilities, AgentCard
+        from a2a.types import AgentCapabilities, AgentCard, AgentSkill
         from google.adk.a2a.utils.agent_to_a2a import to_a2a
     except ImportError as e:
         logger.warning("google-adk a2a not available (%s) — using stub app", e)
-        return _stub_app(name, description, url, version, fhir_extension_uri, require_api_key)
+        return _stub_app(name, description, url, version, fhir_extension_uri, require_api_key, skills)
 
     parsed = urlparse(url)
     host = parsed.hostname or "0.0.0.0"
     port = parsed.port or (443 if parsed.scheme == "https" else 8001)
 
+    skill_objects = [AgentSkill(**s) for s in (skills or [])]
     card_data: dict[str, Any] = {
         "name": name,
         "description": description,
@@ -49,7 +51,7 @@ def create_a2a_app(
         "capabilities": AgentCapabilities(streaming=True),
         "default_input_modes": ["text/plain"],
         "default_output_modes": ["text/plain"],
-        "skills": [],
+        "skills": skill_objects,
     }
     if require_api_key:
         card_data["security_schemes"] = {
@@ -63,7 +65,7 @@ def create_a2a_app(
     return app
 
 
-def _stub_app(name, description, url, version, fhir_extension_uri, require_api_key):
+def _stub_app(name, description, url, version, fhir_extension_uri, require_api_key, skills=None):
     from starlette.applications import Starlette
     from starlette.responses import JSONResponse
     from starlette.routing import Route
@@ -77,7 +79,7 @@ def _stub_app(name, description, url, version, fhir_extension_uri, require_api_k
             "capabilities": {"streaming": True},
             "defaultInputModes": ["text/plain"],
             "defaultOutputModes": ["text/plain"],
-            "skills": [],
+            "skills": skills or [],
         }
         if require_api_key:
             card["securitySchemes"] = {
