@@ -76,7 +76,29 @@ async def run(arguments: dict[str, Any]) -> dict[str, Any]:
         impression=report.conclusion,
     )
 
-    return {"found": True, "study": study.model_dump()}
+    # If the DiagnosticReport has no ACR tag, fall back to LLM inference.
+    # Tag (when set by clinician/RIS) is always primary; LLM fills the gap.
+    classification_meta: dict[str, Any] = {"source": "tag" if study.acr_category else "missing"}
+    if not study.acr_category and study.report_text:
+        try:
+            from critcom.classification.classifier import RadiologyClassifier
+            classifier = RadiologyClassifier()
+            cls = await classifier.classify(study.report_text)
+            study.acr_category = cls.category.value
+            classification_meta = {
+                "source": "llm",
+                "confidence": cls.confidence,
+                "reasoning": cls.reasoning,
+                "finding": cls.finding,
+            }
+            log.info("tool.fetch_report_fhir.llm_inferred", category=cls.category.value, confidence=cls.confidence)
+        except Exception as e:
+            log.warning("tool.fetch_report_fhir.llm_classification_failed", error=str(e))
+            classification_meta = {"source": "missing", "error": str(e)}
+
+    result: dict[str, Any] = {"found": True, "study": study.model_dump()}
+    result["classification"] = classification_meta
+    return result
 
 
 def _extract_presented_form_text(report: Any) -> str | None:

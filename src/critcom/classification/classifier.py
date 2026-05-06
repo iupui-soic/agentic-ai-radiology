@@ -1,7 +1,10 @@
 """
-ACR critical-results classifier.
+ACR critical-results classifier (Gemini-backed).
 
-Calls Claude via the Anthropic SDK and returns a structured ClassificationResult.
+Reads a radiology report's free text and returns a structured
+ClassificationResult with the inferred ACR category.
+
+This module reuses the same Gemini key the agent uses (GOOGLE_API_KEY).
 """
 
 from __future__ import annotations
@@ -11,7 +14,6 @@ import os
 from enum import Enum
 from typing import Any
 
-import anthropic
 import structlog
 from pydantic import BaseModel, Field
 
@@ -54,45 +56,68 @@ class ClassificationResult(BaseModel):
         return levels.get(self.category, 0)
 
 
-class RadiologyClassifier:
-    """Classifies radiology reports using Claude."""
+def _strip_fences(raw: str) -> str:
+    raw = raw.strip()
+    if raw.startswith("```"):
+        parts = raw.split("```")
+        if len(parts) >= 2:
+            raw = parts[1]
+        if raw.lower().startswith("json"):
+            raw = raw[4:]
+    return raw.strip()
 
-    def __init__(self, client: anthropic.AsyncAnthropic | None = None) -> None:
-        self._client = client or anthropic.AsyncAnthropic(
-            api_key=os.getenv("ANTHROPIC_API_KEY")
-        )
-        self._model = os.getenv("CRITCOM_LLM_MODEL", "claude-sonnet-4-5").replace("anthropic/", "")
+
+class RadiologyClassifier:
+    """Classifies radiology report text using Google Gemini.
+
+    Reuses GOOGLE_API_KEY and CRITCOM_LLM_MODEL — the same values the agent uses.
+    """
+
+    def __init__(self, api_key: str | None = None) -> None:
+        try:
+            import google.generativeai as genai
+        except ImportError as e:
+            raise RuntimeError(
+                "google-generativeai is required. Install with: pip install google-generativeai"
+            ) from e
+
+        key = api_key or os.getenv("GOOGLE_API_KEY")
+        if not key:
+            raise RuntimeError("GOOGLE_API_KEY is not set")
+        genai.configure(api_key=key)
+
+        self._genai = genai
+        self._model_name = os.getenv("CRITCOM_LLM_MODEL", "gemini-2.0-flash")
         self._temperature = float(os.getenv("CRITCOM_LLM_TEMPERATURE", "0.0"))
         self._max_tokens = int(os.getenv("CRITCOM_LLM_MAX_TOKENS", "1024"))
 
     async def classify(self, report_text: str) -> ClassificationResult:
         """Classify a radiology report and return a structured result."""
-        log.info("classifier.start", chars=len(report_text))
+        log.info("classifier.start", chars=len(report_text), model=self._model_name)
 
-        response = await self._client.messages.create(
-            model=self._model,
-            max_tokens=self._max_tokens,
-            temperature=self._temperature,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": build_user_message(report_text)}],
+        model = self._genai.GenerativeModel(
+            self._model_name,
+            system_instruction=SYSTEM_PROMPT,
+            generation_config={
+                "temperature": self._temperature,
+                "max_output_tokens": self._max_tokens,
+                "response_mime_type": "application/json",
+            },
         )
 
-        raw = response.content[0].text.strip()
+        response = await model.generate_content_async(build_user_message(report_text))
+
+        raw = (response.text or "").strip()
         log.debug("classifier.raw_response", raw=raw[:300])
 
-        # Strip accidental markdown fences the model might add
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-
-        parsed: dict[str, Any] = json.loads(raw)
+        cleaned = _strip_fences(raw)
+        parsed: dict[str, Any] = json.loads(cleaned)
         result = ClassificationResult.model_validate(parsed)
 
         log.info(
             "classifier.done",
             category=result.category,
-            finding=result.finding,
+            finding=result.finding[:80],
             confidence=result.confidence,
         )
         return result

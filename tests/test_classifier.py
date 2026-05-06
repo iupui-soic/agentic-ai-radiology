@@ -94,75 +94,80 @@ class TestClassificationResult:
 # Classifier unit tests (mocked LLM)
 # ---------------------------------------------------------------------------
 
-def _make_mock_response(category: str, finding: str, confidence: float = 0.95) -> MagicMock:
+def _make_mock_gemini_response(category: str, finding: str, confidence: float = 0.95):
     payload = {
         "category": category,
         "finding": finding,
         "reasoning": "Test reasoning.",
         "confidence": confidence,
     }
-    content_block = MagicMock()
-    content_block.text = json.dumps(payload)
     response = MagicMock()
-    response.content = [content_block]
+    response.text = json.dumps(payload)
     return response
 
 
-@pytest.fixture
-def mock_anthropic():
-    mock_client = MagicMock()
-    mock_client.messages = MagicMock()
-    mock_client.messages.create = AsyncMock()
-    return mock_client
+def _patch_gemini_classifier(monkeypatch, mock_response):
+    """Wire a fake google.generativeai module into the classifier."""
+    fake_model = MagicMock()
+    fake_model.generate_content_async = AsyncMock(return_value=mock_response)
+
+    fake_genai = MagicMock()
+    fake_genai.configure = MagicMock()
+    fake_genai.GenerativeModel = MagicMock(return_value=fake_model)
+
+    monkeypatch.setenv("GOOGLE_API_KEY", "fake-key-for-tests")
+
+    import critcom.classification.classifier as classifier_module
+
+    def _patched_init(self, api_key=None):
+        self._genai = fake_genai
+        self._model_name = "gemini-test"
+        self._temperature = 0.0
+        self._max_tokens = 1024
+
+    monkeypatch.setattr(classifier_module.RadiologyClassifier, "__init__", _patched_init)
 
 
 class TestRadiologyClassifier:
     @pytest.mark.asyncio
-    async def test_classify_cat1(self, mock_anthropic):
-        mock_anthropic.messages.create.return_value = _make_mock_response(
-            "Cat1", "Large aortic dissection extending from the root to the celiac axis"
+    async def test_classify_cat1(self, monkeypatch):
+        _patch_gemini_classifier(
+            monkeypatch,
+            _make_mock_gemini_response("Cat1", "Large aortic dissection extending from the root to the celiac axis"),
         )
-        classifier = RadiologyClassifier(client=mock_anthropic)
-        result = await classifier.classify("CT chest report text here.")
-
+        result = await RadiologyClassifier().classify("CT chest report text here.")
         assert result.category == ACRCategory.CAT1
         assert result.is_critical is True
         assert "aortic dissection" in result.finding.lower()
 
     @pytest.mark.asyncio
-    async def test_classify_cat2(self, mock_anthropic):
-        mock_anthropic.messages.create.return_value = _make_mock_response(
-            "Cat2", "Acute pulmonary embolism in right lower lobe segmental branches", 0.91
+    async def test_classify_cat2(self, monkeypatch):
+        _patch_gemini_classifier(
+            monkeypatch,
+            _make_mock_gemini_response("Cat2", "Acute pulmonary embolism", 0.91),
         )
-        classifier = RadiologyClassifier(client=mock_anthropic)
-        result = await classifier.classify("CT pulmonary angiography report.")
-
+        result = await RadiologyClassifier().classify("CT pulmonary angiography report.")
         assert result.category == ACRCategory.CAT2
         assert result.is_critical is True
 
     @pytest.mark.asyncio
-    async def test_classify_none(self, mock_anthropic):
-        mock_anthropic.messages.create.return_value = _make_mock_response(
-            "None", "No critical finding", 0.99
+    async def test_classify_none(self, monkeypatch):
+        _patch_gemini_classifier(
+            monkeypatch,
+            _make_mock_gemini_response("None", "No critical finding", 0.99),
         )
-        classifier = RadiologyClassifier(client=mock_anthropic)
-        result = await classifier.classify("Normal chest X-ray.")
-
+        result = await RadiologyClassifier().classify("Normal chest X-ray.")
         assert result.category == ACRCategory.NONE
         assert result.is_critical is False
         assert result.ack_timeout_minutes is None
 
     @pytest.mark.asyncio
-    async def test_strips_markdown_fences(self, mock_anthropic):
+    async def test_strips_markdown_fences(self, monkeypatch):
         payload = {"category": "Cat1", "finding": "Test", "reasoning": "Test", "confidence": 0.9}
-        content_block = MagicMock()
-        content_block.text = f"```json\n{json.dumps(payload)}\n```"
         response = MagicMock()
-        response.content = [content_block]
-        mock_anthropic.messages.create.return_value = response
-
-        classifier = RadiologyClassifier(client=mock_anthropic)
-        result = await classifier.classify("Report text.")
+        response.text = f"```json\n{json.dumps(payload)}\n```"
+        _patch_gemini_classifier(monkeypatch, response)
+        result = await RadiologyClassifier().classify("Report text.")
         assert result.category == ACRCategory.CAT1
 
 
