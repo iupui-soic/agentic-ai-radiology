@@ -59,6 +59,15 @@ async def fetch_report_dicom_tool(
     })
 
 
+async def fetch_radiologist_findings_tool(
+    accession_number: str,
+    tool_context: Any = None,
+) -> dict:
+    """Retrieve radiologist-signed findings text for a DICOM accession from the local report broker."""
+    from critcom.tools.fetch_radiologist_findings import run
+    return await run({"accession_number": accession_number})
+
+
 async def resolve_provider_tool(
     service_request_id: str,
     on_call: bool = False,
@@ -160,6 +169,7 @@ async def query_audit_tool(
 ALL_TOOLS = [
     fetch_report_fhir_tool,
     fetch_report_dicom_tool,
+    fetch_radiologist_findings_tool,
     resolve_provider_tool,
     dispatch_communication_tool,
     track_acknowledgment_tool,

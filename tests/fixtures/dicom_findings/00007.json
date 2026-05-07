@@ -1,0 +1,10 @@
+{
+  "accession_number": "00007",
+  "patient_dicom_id": "BLV734623",
+  "signed_at": "2026-05-06T22:30:00+00:00",
+  "radiologist": "synthetic-radiologist",
+  "report_text": "Findings: Massive saddle pulmonary embolism extending into bilateral main pulmonary arteries with extension into segmental branches. Right ventricular dilation with septal bowing toward the left ventricle. Right ventricle to left ventricle ratio 1.5. Reflux of contrast into the IVC and hepatic veins. Findings consistent with acute high-risk pulmonary embolism with imaging signs of right heart strain.",
+  "ordering_practitioner_id": "practitioner-001",
+  "service_request_id": "sr-001",
+  "patient_id": "patient-001"
+}
