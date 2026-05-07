@@ -67,6 +67,16 @@ curl -X POST https://pranathi.b691.us/critcom/ \
        "params":{"message":{"role":"user","messageId":"m5",
          "parts":[{"kind":"text","text":"Use query_audit_tool to return the full Communication and Task history for service_request_id sr-002."}]}}}'
 # → returns every Communication and Task linked to that case.
+
+# F. Pure DICOM-only end-to-end — worklist + findings bridge
+curl -X POST https://pranathi.b691.us/critcom/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":"6","method":"message/send",
+       "params":{"message":{"role":"user","messageId":"m6",
+         "parts":[{"kind":"text","text":"Process accession_number 00007 from the DICOM worklist. Retrieve the signed findings via fetch_radiologist_findings_tool and complete the full critical-results workflow."}]}}}'
+# → fetches DCMTK Beethoven worklist entry, pulls signed findings from the
+#   report-broker fixture, LLM classifies as Cat1, dispatches to Dr. Chen,
+#   opens 60-min ack Task. Worklist data itself stays pristine.
 ```
 
 ### Seed data available for demos
@@ -78,6 +88,9 @@ curl -X POST https://pranathi.b691.us/critcom/ \
 | `dr-003` | Dorothy Williams | Hypertensive ICH | Cat1 | (Cat1 alt) |
 | `dr-004` | Eleanor Goldberg | Stable cholelithiasis | Cat3 | B |
 | `ACC0001`–`ACC0003` | (DICOM worklist) | scheduled CT | n/a | C |
+| `00001`–`00010` | DCMTK fixtures (Vivaldi, Beethoven, Mozart, Haydn) | scheduled, no findings | n/a | F (worklist side) |
+| `00007.json` | Beethoven (synthetic findings file) | Saddle PE w/ RV strain | Cat1 (LLM) | F |
+| `00001.json` | Vivaldi (synthetic findings file) | Stable cholelithiasis | Cat3 (LLM) | F (stop path) |
 | `task-overdue-001` | (overdue ack for sr-002) | — | — | D, E |
 
 ---
@@ -346,13 +359,14 @@ critcom/
 │   └── tools/               # ADK-compatible wrappers around critcom.tools
 ├── src/critcom/
 │   ├── fhir/                # Pydantic FHIR R4 models + async client
-│   ├── classification/      # ACR classifier (used in tests / future LLM path)
-│   ├── tools/               # 7 tools — the actual logic
-│   └── scripts/             # seed.py (HAPI), seed_dicom.py (Orthanc)
+│   ├── classification/      # ACR classifier (Gemini-backed)
+│   ├── tools/               # 8 tools — the actual logic
+│   └── scripts/             # seed.py (HAPI), seed_dicom*.py (Orthanc, 3 variants)
 ├── tests/
 │   ├── fixtures/
 │   │   ├── fhir/seed_bundle.json
-│   │   └── reports/sample_reports.json
+│   │   ├── reports/sample_reports.json
+│   │   └── dicom_findings/  # report-broker JSON keyed by DICOM accession
 │   └── test_*.py
 ├── docker-compose.yml
 ├── Dockerfile
@@ -362,12 +376,13 @@ critcom/
 
 ---
 
-## The 7 tools
+## The 8 tools
 
 | Tool | What it does |
 |---|---|
 | `fetch_report_fhir` | Get a signed DiagnosticReport + linked ServiceRequest from FHIR |
 | `fetch_report_dicom` | C-FIND query against a DICOM MWL (fallback when no FHIR) |
+| `fetch_radiologist_findings` | Read radiologist-signed findings from the local report broker (keyed by DICOM accession), then auto-classify via the LLM. Bridges the DICOM-only path to the rest of the workflow. |
 | `resolve_provider` | Walk ServiceRequest → Practitioner / on-call PractitionerRole |
 | `dispatch_communication` | Create a FHIR `Communication` resource — notification record |
 | `track_acknowledgment` | Create / check / complete a FHIR `Task` for ack tracking |
@@ -388,8 +403,16 @@ critcom/
 
 2. fetch_report_{fhir,dicom}
    └── Returns CritComStudy { priority, acr_category, IDs, text }
+       FHIR  → has report_text; acr_category from tag (or LLM if tag missing)
+       DICOM → scheduling only; no findings, no acr_category → goto 2b
 
-3. Read ACR category from DiagnosticReport
+2b. (DICOM path only) fetch_radiologist_findings
+    └── Reads tests/fixtures/dicom_findings/<accession>.json
+        Runs LLM classifier on the report text → fills acr_category.
+        Returns service_request_id + patient_id for downstream tools.
+        If no findings file → report not signed yet, stop.
+
+3. Read ACR category
    └── Cat3 / None  →  log only, stop
        Cat1 / Cat2  →  continue
 
@@ -400,6 +423,17 @@ critcom/
 6. track_acknowledgment    →  FHIR Task with deadline
 7. If timeout: escalate    →  on-call provider, new Task
 ```
+
+### Why the report broker is separate
+
+DICOM Modality Worklist data is *scheduling* — the order, not the report. In
+real hospitals the worklist comes from RIS and the signed report comes from
+the dictation/reporting system. This codebase keeps that separation: the
+worklist (`orthanc-worklists/*.wl`, including DCMTK public fixtures) stays
+pristine and citable, while findings live in their own keyed-by-accession
+directory (`tests/fixtures/dicom_findings/<accession>.json`). They join on
+`accession_number`. To add a demoable Cat1/Cat2 case for any DCMTK
+accession, drop a JSON file in that directory; nothing else changes.
 
 `ServiceRequest.priority` (FHIR) and `Requested Procedure Priority` (DICOM)
 control the **agent processing queue order** only. The clinical urgency (ACR
@@ -420,6 +454,7 @@ All settings live in `.env`. The most important ones:
 | `CRITCOM_FHIR_BASE_URL` | HAPI FHIR base URL |
 | `CRITCOM_DICOM_HOST` / `_PORT` / `_AET` | Orthanc DICOM endpoint |
 | `CRITCOM_FHIR_EXTENSION_URI` | A2A metadata extension URI for FHIR context |
+| `CRITCOM_FINDINGS_DIR` | Report-broker dir for `fetch_radiologist_findings` (default `tests/fixtures/dicom_findings`) |
 | `CRITCOM_CAT1_ACK_TIMEOUT_MINUTES` | ACR Cat1 ack deadline (default 60) |
 | `CRITCOM_CAT2_ACK_TIMEOUT_MINUTES` | ACR Cat2 ack deadline (default 1440) |
 
