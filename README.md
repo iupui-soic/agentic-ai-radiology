@@ -90,6 +90,7 @@ curl -X POST https://pranathi.b691.us/critcom/ \
 | `ACC0001`–`ACC0003` | (DICOM worklist) | scheduled CT | n/a | C |
 | `00001`–`00010` | DCMTK fixtures (Vivaldi, Beethoven, Mozart, Haydn) | scheduled, no findings | n/a | F (worklist side) |
 | `00007.json` | Beethoven (synthetic findings file) | Saddle PE w/ RV strain | Cat1 (LLM) | F |
+| `00003.json` | Vivaldi (synthetic findings file) | Subsegmental PE, no RV strain | Cat2 (LLM) | F (Cat2 variant) |
 | `00001.json` | Vivaldi (synthetic findings file) | Stable cholelithiasis | Cat3 (LLM) | F (stop path) |
 | `task-overdue-001` | (overdue ack for sr-002) | — | — | D, E |
 
