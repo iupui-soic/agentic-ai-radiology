@@ -338,7 +338,7 @@ open http://localhost:8042
 ### 5. Run the test suite
 
 ```bash
-pytest -v             # 35 tests, no LLM calls
+pytest -v             # 45 tests, no LLM calls
 pytest -v -m llm      # +2 tests that hit the real LLM (needs GOOGLE_API_KEY)
 ```
 
@@ -481,7 +481,7 @@ nginx terminates TLS at `/critcom/` and proxies to `localhost:8002`. The
 location block lives in `/etc/nginx/sites-enabled/default` and forwards
 `Host`, `X-Forwarded-Proto`, and `X-Forwarded-Prefix /critcom`.
 
-The `dev` branch is kept in sync; PRs from `dev_parvati` → `dev` → `main`.
+PRs land in `dev_parvati` and are merged to `main` for release.
 
 ---
 
@@ -549,7 +549,6 @@ for the current submission scope.
 ## Branches
 
 - `main` — submission baseline
-- `dev` — integration branch
 - `dev_parvati` — **active branch**, all current work lands here
 
 If you `git pull` and see a force-push warning, run

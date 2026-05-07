@@ -1,9 +1,11 @@
 """
 CritCom — Critical Results Communication Agent.
 
-Uses Google ADK to orchestrate the 7 MCP tools that handle the full radiology
-critical results workflow: fetch the report, resolve the provider, dispatch a
-notification, track acknowledgment, and escalate if no response.
+Uses Google ADK to orchestrate the 8 MCP tools that handle the full radiology
+critical results workflow: fetch the report (FHIR or DICOM worklist), pull
+signed findings from the report broker if DICOM-only, classify the finding,
+resolve the provider, dispatch a notification, track acknowledgment, and
+escalate if no response.
 """
 
 from __future__ import annotations
@@ -23,7 +25,8 @@ backup provider.
 
 You have two ways to learn that a study exists:
   - FHIR primary path: a DiagnosticReport with status="final"
-  - DICOM fallback path: a study in the Modality Worklist
+  - DICOM fallback path: a study in the Modality Worklist (carries scheduling
+    only, not findings — pair with the report broker, see step 2)
 
 When you are asked to process a study or report:
 
