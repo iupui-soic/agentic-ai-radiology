@@ -1,1 +1,1 @@
-"""Operational scripts (seed, evaluate)."""
+# scripts

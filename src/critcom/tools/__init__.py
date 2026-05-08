@@ -1,1 +1,1 @@
-"""MCP tools exposed by CritCom."""
+# tools

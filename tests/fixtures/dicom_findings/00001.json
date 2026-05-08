@@ -1,0 +1,10 @@
+{
+  "accession_number": "00001",
+  "patient_dicom_id": "MWA484763",
+  "signed_at": "2026-05-06T20:15:00+00:00",
+  "radiologist": "synthetic-radiologist",
+  "report_text": "Findings: Stable cholelithiasis without evidence of acute cholecystitis. No biliary ductal dilation. Liver parenchyma is homogeneous. No focal hepatic lesion. Spleen, pancreas, adrenal glands, and kidneys are unremarkable. No free fluid. Impression: Stable cholelithiasis. No acute findings.",
+  "ordering_practitioner_id": "practitioner-002",
+  "service_request_id": "sr-004",
+  "patient_id": "patient-004"
+}

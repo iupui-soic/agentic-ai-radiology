@@ -1,0 +1,953 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:patient-001",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-001",
+        "name": [
+          {
+            "use": "official",
+            "family": "Kowalski",
+            "given": [
+              "Robert",
+              "James"
+            ]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1966-03-14",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-0192",
+            "use": "home"
+          }
+        ],
+        "address": [
+          {
+            "use": "home",
+            "city": "Indianapolis",
+            "state": "IN",
+            "postalCode": "46204"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:patient-002",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-002",
+        "name": [
+          {
+            "use": "official",
+            "family": "Nguyen",
+            "given": [
+              "Linh",
+              "Thu"
+            ]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1976-07-22",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-0247",
+            "use": "mobile"
+          }
+        ],
+        "address": [
+          {
+            "use": "home",
+            "city": "Carmel",
+            "state": "IN",
+            "postalCode": "46032"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-002"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:patient-003",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-003",
+        "name": [
+          {
+            "use": "official",
+            "family": "Williams",
+            "given": [
+              "Dorothy",
+              "Mae"
+            ]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1951-11-08",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-0381",
+            "use": "home"
+          }
+        ],
+        "address": [
+          {
+            "use": "home",
+            "city": "Fishers",
+            "state": "IN",
+            "postalCode": "46037"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-003"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:practitioner-001",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "practitioner-001",
+        "name": [
+          {
+            "use": "official",
+            "family": "Chen",
+            "given": [
+              "Michael",
+              "Wei"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-1001",
+            "use": "work"
+          },
+          {
+            "system": "pager",
+            "value": "317-555-2001",
+            "use": "work"
+          },
+          {
+            "system": "email",
+            "value": "mchen@iupui-health.edu",
+            "use": "work"
+          }
+        ],
+        "qualification": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0360",
+                  "code": "MD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Practitioner/practitioner-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:practitioner-002",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "practitioner-002",
+        "name": [
+          {
+            "use": "official",
+            "family": "Okafor",
+            "given": [
+              "Adaeze",
+              "Chisom"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-1002",
+            "use": "work"
+          },
+          {
+            "system": "pager",
+            "value": "317-555-2002",
+            "use": "work"
+          },
+          {
+            "system": "email",
+            "value": "aokafor@iupui-health.edu",
+            "use": "work"
+          }
+        ],
+        "qualification": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0360",
+                  "code": "MD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Practitioner/practitioner-002"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:practitioner-003",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "practitioner-003",
+        "name": [
+          {
+            "use": "official",
+            "family": "Patel",
+            "given": [
+              "Sunita",
+              "Rajiv"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-1003",
+            "use": "work"
+          },
+          {
+            "system": "pager",
+            "value": "317-555-2003",
+            "use": "work"
+          },
+          {
+            "system": "email",
+            "value": "spatel@iupui-health.edu",
+            "use": "work"
+          }
+        ],
+        "qualification": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0360",
+                  "code": "MD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Practitioner/practitioner-003"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:practitioner-oncall-001",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "practitioner-oncall-001",
+        "name": [
+          {
+            "use": "official",
+            "family": "Reyes",
+            "given": [
+              "Carlos",
+              "Eduardo"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-1099",
+            "use": "work"
+          },
+          {
+            "system": "pager",
+            "value": "317-555-2099",
+            "use": "work"
+          },
+          {
+            "system": "email",
+            "value": "creyes@iupui-health.edu",
+            "use": "work"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Practitioner/practitioner-oncall-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:role-001",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "role-001",
+        "active": true,
+        "practitioner": {
+          "reference": "Practitioner/practitioner-001",
+          "display": "Dr. Michael Chen"
+        },
+        "code": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "11911009",
+                "display": "Internist"
+              }
+            ]
+          }
+        ],
+        "specialty": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "394814009",
+                "display": "General practice"
+              }
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "pager",
+            "value": "317-555-2001",
+            "use": "work"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "PractitionerRole/role-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:role-002",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "role-002",
+        "active": true,
+        "practitioner": {
+          "reference": "Practitioner/practitioner-002",
+          "display": "Dr. Adaeze Okafor"
+        },
+        "code": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "11911009",
+                "display": "Pulmonologist"
+              }
+            ]
+          }
+        ],
+        "specialty": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "418960008",
+                "display": "Otolaryngology"
+              }
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "pager",
+            "value": "317-555-2002",
+            "use": "work"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "PractitionerRole/role-002"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:role-003",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "role-003",
+        "active": true,
+        "practitioner": {
+          "reference": "Practitioner/practitioner-003",
+          "display": "Dr. Sunita Patel"
+        },
+        "code": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "11911009",
+                "display": "Neurologist"
+              }
+            ]
+          }
+        ],
+        "specialty": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "394591006",
+                "display": "Neurology"
+              }
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "pager",
+            "value": "317-555-2003",
+            "use": "work"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "PractitionerRole/role-003"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:role-oncall-001",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "role-oncall-001",
+        "active": true,
+        "practitioner": {
+          "reference": "Practitioner/practitioner-oncall-001",
+          "display": "Dr. Carlos Reyes"
+        },
+        "code": [
+          {
+            "coding": [
+              {
+                "system": "http://critcom/role-type",
+                "code": "on-call",
+                "display": "On-Call Physician"
+              }
+            ]
+          }
+        ],
+        "specialty": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "394814009",
+                "display": "General practice"
+              }
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-1099",
+            "use": "work"
+          },
+          {
+            "system": "pager",
+            "value": "317-555-2099",
+            "use": "work"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "PractitionerRole/role-oncall-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:sr-001",
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "sr-001",
+        "status": "active",
+        "intent": "order",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "24627-2",
+              "display": "CT Chest"
+            }
+          ],
+          "text": "CT Chest/Abdomen/Pelvis with contrast"
+        },
+        "subject": {
+          "reference": "Patient/patient-001"
+        },
+        "requester": {
+          "reference": "Practitioner/practitioner-001",
+          "display": "Dr. Michael Chen"
+        },
+        "reasonCode": [
+          {
+            "text": "Sudden onset tearing chest pain"
+          }
+        ],
+        "priority": "stat"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ServiceRequest/sr-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:sr-002",
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "sr-002",
+        "status": "active",
+        "intent": "order",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "24632-2",
+              "display": "CT Pulmonary Angiography"
+            }
+          ],
+          "text": "CT Pulmonary Angiography"
+        },
+        "subject": {
+          "reference": "Patient/patient-002"
+        },
+        "requester": {
+          "reference": "Practitioner/practitioner-002",
+          "display": "Dr. Adaeze Okafor"
+        },
+        "reasonCode": [
+          {
+            "text": "Pleuritic chest pain, elevated D-dimer"
+          }
+        ],
+        "priority": "urgent"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ServiceRequest/sr-002"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:sr-003",
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "sr-003",
+        "status": "active",
+        "intent": "order",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "24725-4",
+              "display": "CT Head"
+            }
+          ],
+          "text": "CT Head without contrast"
+        },
+        "subject": {
+          "reference": "Patient/patient-003"
+        },
+        "requester": {
+          "reference": "Practitioner/practitioner-003",
+          "display": "Dr. Sunita Patel"
+        },
+        "reasonCode": [
+          {
+            "text": "Sudden onset severe headache, GCS 13"
+          }
+        ],
+        "priority": "stat"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ServiceRequest/sr-003"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:dr-001",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-001",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11522-0",
+              "display": "Radiology report"
+            }
+          ],
+          "text": "CT Chest/Abdomen/Pelvis with contrast"
+        },
+        "subject": {
+          "reference": "Patient/patient-001"
+        },
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/sr-001"
+          }
+        ],
+        "performer": [
+          {
+            "reference": "Practitioner/practitioner-001"
+          }
+        ],
+        "issued": "2026-04-25T14:32:00+00:00",
+        "conclusion": ":\n1. TYPE A AORTIC DISSECTION \u2014 intimal flap originating above the sinotubular junction extending to the celiac axis level. This is a surgical emergency.\n2. Mild pericardial effusion without imaging evidence of tamponade.\n3. Small bilateral pleural effusions, likely reactive.",
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "data": "Q0xJTklDQUwgSU5ESUNBVElPTjogNTgteWVhci1vbGQgbWFsZSBwcmVzZW50aW5nIHdpdGggc3VkZGVuIG9uc2V0IHRlYXJpbmcgY2hlc3QgcGFpbiByYWRpYXRpbmcgdG8gdGhlIGJhY2ssIGh5cGVydGVuc2lvbi4KClRFQ0hOSVFVRTogQ1QgYW5naW9ncmFwaHkgb2YgdGhlIGNoZXN0LCBhYmRvbWVuLCBhbmQgcGVsdmlzIHdhcyBwZXJmb3JtZWQgd2l0aCBpbnRyYXZlbm91cyBjb250cmFzdCBpbiB0aGUgYXJ0ZXJpYWwgYW5kIHZlbm91cyBwaGFzZXMuCgpGSU5ESU5HUzoKQU9SVEE6IFRoZXJlIGlzIGFuIGludGltYWwgZmxhcCBvcmlnaW5hdGluZyBhdCB0aGUgbGV2ZWwgb2YgdGhlIGFvcnRpYyByb290LCAxLjUgY20gYWJvdmUgdGhlIHNpbm90dWJ1bGFyIGp1bmN0aW9uLCBleHRlbmRpbmcgaW5mZXJpb3JseSB0aHJvdWdoIHRoZSBkZXNjZW5kaW5nIHRob3JhY2ljIGFvcnRhIHRvIHRoZSBsZXZlbCBvZiB0aGUgY2VsaWFjIGF4aXMuIFRoZSB0cnVlIGx1bWVuIGlzIGNvbXByZXNzZWQgYnkgdGhlIGZhbHNlIGx1bWVuLCB3aGljaCBpcyBsYXJnZXIgaW4gY2FsaWJlciAodHJ1ZSBsdW1lbiBkaWFtZXRlciAyLjEgY20sIGZhbHNlIGx1bWVuIDMuOCBjbSkuIFRoZSBmYWxzZSBsdW1lbiBkZW1vbnN0cmF0ZXMgZGVsYXllZCBlbmhhbmNlbWVudCBjb25zaXN0ZW50IHdpdGggc2xvd2VyIGZsb3cuCgpUaGUgY29yb25hcnkgb3N0aWEgYXJpc2UgZnJvbSB0aGUgdHJ1ZSBsdW1lbi4gVGhlIGFvcnRpYyBhcmNoIHZlc3NlbHMsIGluY2x1ZGluZyB0aGUgaW5ub21pbmF0ZSBhcnRlcnksIGxlZnQgY29tbW9uIGNhcm90aWQgYXJ0ZXJ5LCBhbmQgbGVmdCBzdWJjbGF2aWFuIGFydGVyeSwgYXJpc2UgZnJvbSB0aGUgdHJ1ZSBsdW1lbiB3aXRob3V0IGV2aWRlbmNlIG9mIGNvbXByb21pc2UuCgpUaGUgY2VsaWFjIGF4aXMgYW5kIHN1cGVyaW9yIG1lc2VudGVyaWMgYXJ0ZXJ5IGFyaXNlIGZyb20gdGhlIHRydWUgbHVtZW4gd2l0aG91dCBjb21wcm9taXNlLiBUaGUgYmlsYXRlcmFsIHJlbmFsIGFydGVyaWVzIGFyaXNlIGZyb20gdGhlIHRydWUgbHVtZW4uCgpQRVJJQ0FSRElVTTogTWlsZCBwZXJpY2FyZGlhbCBlZmZ1c2lvbiBpcyBwcmVzZW50LCBtZWFzdXJpbmcgdXAgdG8gOCBtbSBpbiB0aGlja25lc3MuIE5vIGZyYW5rIHRhbXBvbmFkZSBwaHlzaW9sb2d5IG9uIHRoaXMgc3RhdGljIGV4YW1pbmF0aW9uLgoKSEVBUlQ6IE1pbGRseSBlbmxhcmdlZCBjYXJkaWFjIHNpbGhvdWV0dGUuIE5vIG90aGVyIGludHJhY2FyZGlhYyBhYm5vcm1hbGl0eSBpZGVudGlmaWVkLgoKTFVOR1M6IFNtYWxsIGJpbGF0ZXJhbCBwbGV1cmFsIGVmZnVzaW9ucywgcmlnaHQgZ3JlYXRlciB0aGFuIGxlZnQuIE5vIHBhcmVuY2h5bWFsIGNvbnNvbGlkYXRpb24uCgpJTVBSRVNTSU9OOgoxLiBUWVBFIEEgQU9SVElDIERJU1NFQ1RJT04g4oCUIGludGltYWwgZmxhcCBvcmlnaW5hdGluZyBhYm92ZSB0aGUgc2lub3R1YnVsYXIganVuY3Rpb24gZXh0ZW5kaW5nIHRvIHRoZSBjZWxpYWMgYXhpcyBsZXZlbC4gVGhpcyBpcyBhIHN1cmdpY2FsIGVtZXJnZW5jeS4KMi4gTWlsZCBwZXJpY2FyZGlhbCBlZmZ1c2lvbiB3aXRob3V0IGltYWdpbmcgZXZpZGVuY2Ugb2YgdGFtcG9uYWRlLgozLiBTbWFsbCBiaWxhdGVyYWwgcGxldXJhbCBlZmZ1c2lvbnMsIGxpa2VseSByZWFjdGl2ZS4KCkFUVEVORElORyBSQURJT0xPR0lTVCBOT1RBVElPTjogSSBoYXZlIGNhbGxlZCB0aGUgb3JkZXJpbmcgcGh5c2ljaWFuLCBEci4gQ2hlbiwgZGlyZWN0bHkgYXQgMTQ6MzIgdG8gY29tbXVuaWNhdGUgdGhpcyBjcml0aWNhbCBmaW5kaW5nLiBQYXRpZW50IHJlcXVpcmVzIGVtZXJnZW50IGNhcmRpb3Rob3JhY2ljIHN1cmdpY2FsIGNvbnN1bHRhdGlvbi4=",
+            "title": "CT Chest/Abdomen/Pelvis with contrast report"
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://critcom/StructureDefinition/acr-category",
+            "valueCode": "Cat1"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/dr-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:dr-002",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-002",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11522-0",
+              "display": "Radiology report"
+            }
+          ],
+          "text": "CT Pulmonary Angiography"
+        },
+        "subject": {
+          "reference": "Patient/patient-002"
+        },
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/sr-002"
+          }
+        ],
+        "performer": [
+          {
+            "reference": "Practitioner/practitioner-002"
+          }
+        ],
+        "issued": "2026-04-25T14:32:00+00:00",
+        "conclusion": ":\n1. Acute pulmonary emboli involving segmental and subsegmental branches of the right lower lobe pulmonary artery. The central pulmonary arteries are patent; this is a non-massive PE without evidence of right heart strain.\n2. Possible right lower lobe pulmonary infarct.\n3. Anticoagulation should be initiated. Recommend clinical correlation with hemodynamic status.",
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "data": "Q0xJTklDQUwgSU5ESUNBVElPTjogNDgteWVhci1vbGQgZmVtYWxlIHdpdGggcGxldXJpdGljIGNoZXN0IHBhaW4gYW5kIGVsZXZhdGVkIEQtZGltZXIsIHJlY2VudCBsb25nLWhhdWwgZmxpZ2h0LgoKVEVDSE5JUVVFOiBDVCBwdWxtb25hcnkgYW5naW9ncmFwaHkgd2l0aCBpbnRyYXZlbm91cyBjb250cmFzdC4KCkZJTkRJTkdTOgpQVUxNT05BUlkgQVJURVJJRVM6IFRoZXJlIGFyZSBmaWxsaW5nIGRlZmVjdHMgd2l0aGluIHRoZSByaWdodCBsb3dlciBsb2JlIHNlZ21lbnRhbCBhbmQgc3Vic2VnbWVudGFsIHB1bG1vbmFyeSBhcnRlcmllcyBjb25zaXN0ZW50IHdpdGggYWN1dGUgcHVsbW9uYXJ5IGVtYm9saS4gVGhlIHJpZ2h0IGxvd2VyIGxvYmUgcG9zdGVyaW9yIGJhc2FsIHNlZ21lbnRhbCBhcnRlcnkgc2hvd3MgbmVhci1jb21wbGV0ZSBvY2NsdXNpb24uIE11bHRpcGxlIHN1YnNlZ21lbnRhbCBicmFuY2hlcyBpbiB0aGUgcmlnaHQgbG93ZXIgbG9iZSBhcmUgYWxzbyBpbnZvbHZlZC4KClRoZSBtYWluLCByaWdodCwgYW5kIGxlZnQgbWFpbiBwdWxtb25hcnkgYXJ0ZXJpZXMgYXJlIHBhdGVudC4gVGhlIHJpZ2h0IGhlYXJ0IGlzIG5vdCBlbmxhcmdlZC4gTm8gc2FkZGxlIGVtYm9sdXMuCgpMVU5HUzogQSBwZXJpcGhlcmFsIHdlZGdlLXNoYXBlZCBvcGFjaXR5IGlzIHByZXNlbnQgaW4gdGhlIHJpZ2h0IGxvd2VyIGxvYmUgcG9zdGVyaW9ybHksIHdoaWNoIG1heSByZXByZXNlbnQgYSBwdWxtb25hcnkgaW5mYXJjdC4gTm8gb3RoZXIgY29uc29saWRhdGlvbi4gTm8gcGxldXJhbCBlZmZ1c2lvbi4KCkhFQVJUOiBUaGUgcmlnaHQgdmVudHJpY2xlIHRvIGxlZnQgdmVudHJpY2xlIHJhdGlvIG1lYXN1cmVzIDAuOSAod2l0aGluIG5vcm1hbCBsaW1pdHMpLiBObyBzZXB0YWwgYm93aW5nLiBObyBwZXJpY2FyZGlhbCBlZmZ1c2lvbi4KCklNUFJFU1NJT046CjEuIEFjdXRlIHB1bG1vbmFyeSBlbWJvbGkgaW52b2x2aW5nIHNlZ21lbnRhbCBhbmQgc3Vic2VnbWVudGFsIGJyYW5jaGVzIG9mIHRoZSByaWdodCBsb3dlciBsb2JlIHB1bG1vbmFyeSBhcnRlcnkuIFRoZSBjZW50cmFsIHB1bG1vbmFyeSBhcnRlcmllcyBhcmUgcGF0ZW50OyB0aGlzIGlzIGEgbm9uLW1hc3NpdmUgUEUgd2l0aG91dCBldmlkZW5jZSBvZiByaWdodCBoZWFydCBzdHJhaW4uCjIuIFBvc3NpYmxlIHJpZ2h0IGxvd2VyIGxvYmUgcHVsbW9uYXJ5IGluZmFyY3QuCjMuIEFudGljb2FndWxhdGlvbiBzaG91bGQgYmUgaW5pdGlhdGVkLiBSZWNvbW1lbmQgY2xpbmljYWwgY29ycmVsYXRpb24gd2l0aCBoZW1vZHluYW1pYyBzdGF0dXMuCgpBVFRFTkRJTkcgUkFESU9MT0dJU1QgTk9UQVRJT046IFJlc3VsdHMgY29tbXVuaWNhdGVkIHRvIG9yZGVyaW5nIHByb3ZpZGVyIGJ5IHBob25lIHdpdGhpbiB0aGUgdXJnZW50IHRpbWVmcmFtZSBwZXIgQUNSIGd1aWRlbGluZXMu",
+            "title": "CT Pulmonary Angiography report"
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://critcom/StructureDefinition/acr-category",
+            "valueCode": "Cat2"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/dr-002"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:dr-003",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-003",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11522-0",
+              "display": "Radiology report"
+            }
+          ],
+          "text": "CT Head without contrast"
+        },
+        "subject": {
+          "reference": "Patient/patient-003"
+        },
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/sr-003"
+          }
+        ],
+        "performer": [
+          {
+            "reference": "Practitioner/practitioner-003"
+          }
+        ],
+        "issued": "2026-04-25T14:32:00+00:00",
+        "conclusion": ":\n1. LARGE RIGHT BASAL GANGLIA HYPERTENSIVE HEMORRHAGE (approximately 29 mL) with intraventricular extension, 6 mm midline shift, and early obstructive hydrocephalus. This is a critical finding.\n2. Neurosurgery and neurology should be consulted emergently.",
+        "presentedForm": [
+          {
+            "contentType": "text/plain",
+            "data": "Q0xJTklDQUwgSU5ESUNBVElPTjogNzIteWVhci1vbGQgZmVtYWxlIG9uIHdhcmZhcmluIHByZXNlbnRpbmcgd2l0aCBzdWRkZW4gb25zZXQgc2V2ZXJlIGhlYWRhY2hlLCB3b3JzdCBvZiBoZXIgbGlmZSwgR0NTIDEzLgoKVEVDSE5JUVVFOiBOb24tY29udHJhc3QgQ1Qgb2YgdGhlIGJyYWluLgoKRklORElOR1M6CkJSQUlOIFBBUkVOQ0hZTUE6IFRoZXJlIGlzIGEgbGFyZ2UgaHlwZXJkZW5zZSBjb2xsZWN0aW9uIHdpdGhpbiB0aGUgcmlnaHQgYmFzYWwgZ2FuZ2xpYSBtZWFzdXJpbmcgNC4yIHggMy44IHggMy41IGNtICh2b2x1bWUgYXBwcm94aW1hdGVseSAyOSBtTCBieSBBQkMvMiBtZXRob2QpLCBjb25zaXN0ZW50IHdpdGggYWN1dGUgaW50cmFwYXJlbmNoeW1hbCBoZW1vcnJoYWdlLiBTdXJyb3VuZGluZyB2YXNvZ2VuaWMgZWRlbWEgZXh0ZW5kcyBpbnRvIHRoZSByaWdodCB0ZW1wb3JhbCBhbmQgZnJvbnRhbCB3aGl0ZSBtYXR0ZXIuIFRoZXJlIGlzIG1hc3MgZWZmZWN0IG9uIHRoZSByaWdodCBsYXRlcmFsIHZlbnRyaWNsZSB3aXRoIGVmZmFjZW1lbnQgb2YgdGhlIHJpZ2h0IHRlbXBvcmFsIGhvcm4uCgpWRU5UUklDTEVTOiBIeXBlcmRlbnNlIG1hdGVyaWFsIGlzIHByZXNlbnQgd2l0aGluIHRoZSByaWdodCBsYXRlcmFsIHZlbnRyaWNsZSBhbmQgdGhlIHRoaXJkIHZlbnRyaWNsZSwgY29uc2lzdGVudCB3aXRoIGludHJhdmVudHJpY3VsYXIgZXh0ZW5zaW9uIG9mIGhlbW9ycmhhZ2UuIFRoZSB0ZW1wb3JhbCBob3JucyBvZiBib3RoIGxhdGVyYWwgdmVudHJpY2xlcyBhcmUgbWlsZGx5IGRpbGF0ZWQsIHJhaXNpbmcgY29uY2VybiBmb3IgZWFybHkgb2JzdHJ1Y3RpdmUgaHlkcm9jZXBoYWx1cy4KCk1JRExJTkU6IFRoZSBtaWRsaW5lIGlzIHNoaWZ0ZWQgNiBtbSB0byB0aGUgbGVmdC4KCkJBU0FMIENJU1RFUk5TOiBNaWxkbHkgY29tcHJlc3NlZCBidXQgcGF0ZW50LgoKTm8gZXh0cmEtYXhpYWwgY29sbGVjdGlvbnMuIE5vIGV2aWRlbmNlIG9mIGhlcm5pYXRpb24gb24gdGhpcyBleGFtaW5hdGlvbi4KCklNUFJFU1NJT046CjEuIExBUkdFIFJJR0hUIEJBU0FMIEdBTkdMSUEgSFlQRVJURU5TSVZFIEhFTU9SUkhBR0UgKGFwcHJveGltYXRlbHkgMjkgbUwpIHdpdGggaW50cmF2ZW50cmljdWxhciBleHRlbnNpb24sIDYgbW0gbWlkbGluZSBzaGlmdCwgYW5kIGVhcmx5IG9ic3RydWN0aXZlIGh5ZHJvY2VwaGFsdXMuIFRoaXMgaXMgYSBjcml0aWNhbCBmaW5kaW5nLgoyLiBOZXVyb3N1cmdlcnkgYW5kIG5ldXJvbG9neSBzaG91bGQgYmUgY29uc3VsdGVkIGVtZXJnZW50bHkuCgpBVFRFTkRJTkcgUkFESU9MT0dJU1QgTk9UQVRJT046IEVtZXJnZW5jeSBkZXBhcnRtZW50IHBoeXNpY2lhbiBhbmQgbmV1cm9zdXJnZXJ5IG9uLWNhbGwgd2VyZSBub3RpZmllZCBieSBwaG9uZSBhdCAyMjo0Ny4=",
+            "title": "CT Head without contrast report"
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://critcom/StructureDefinition/acr-category",
+            "valueCode": "Cat1"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/dr-003"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:patient-004",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-004",
+        "name": [
+          {
+            "use": "official",
+            "family": "Goldberg",
+            "given": ["Eleanor", "Susan"]
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1955-09-12",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "317-555-0455",
+            "use": "home"
+          }
+        ],
+        "address": [
+          {
+            "use": "home",
+            "city": "Indianapolis",
+            "state": "IN",
+            "postalCode": "46220"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-004"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:sr-004",
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "sr-004",
+        "status": "active",
+        "intent": "order",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "30811-7",
+              "display": "CT Abdomen and Pelvis with contrast"
+            }
+          ],
+          "text": "CT Abdomen/Pelvis with contrast — follow-up"
+        },
+        "subject": {
+          "reference": "Patient/patient-004"
+        },
+        "requester": {
+          "reference": "Practitioner/practitioner-001",
+          "display": "Dr. Michael Chen"
+        },
+        "reasonCode": [
+          {
+            "text": "Routine 6-month follow-up of known cholelithiasis. No new symptoms."
+          }
+        ],
+        "priority": "routine"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ServiceRequest/sr-004"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:dr-004",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-004",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "11522-0",
+              "display": "Radiology report"
+            }
+          ],
+          "text": "CT Abdomen/Pelvis with contrast"
+        },
+        "subject": {
+          "reference": "Patient/patient-004"
+        },
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/sr-004"
+          }
+        ],
+        "performer": [
+          {
+            "reference": "Practitioner/practitioner-001"
+          }
+        ],
+        "issued": "2026-05-03T11:15:00+00:00",
+        "conclusion": ":\n1. Stable cholelithiasis without evidence of acute cholecystitis. Gallbladder wall is non-thickened; no pericholecystic fluid.\n2. No acute findings. No new lesions identified compared to prior study.\n3. Routine clinical follow-up. No critical communication required.",
+        "extension": [
+          {
+            "url": "http://critcom/StructureDefinition/acr-category",
+            "valueCode": "Cat3"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/dr-004"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:comm-historical-001",
+      "resource": {
+        "resourceType": "Communication",
+        "id": "comm-historical-001",
+        "status": "in-progress",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://critcom/acr-category",
+                "code": "Cat2"
+              }
+            ],
+            "text": "Cat2"
+          }
+        ],
+        "subject": {
+          "reference": "Patient/patient-002"
+        },
+        "basedOn": [
+          {
+            "reference": "ServiceRequest/sr-002"
+          }
+        ],
+        "about": [
+          {
+            "reference": "ServiceRequest/sr-002"
+          }
+        ],
+        "recipient": [
+          {
+            "reference": "Practitioner/practitioner-002"
+          }
+        ],
+        "sent": "2026-05-04T05:00:00+00:00",
+        "payload": [
+          {
+            "contentString": "Acute pulmonary emboli involving segmental and subsegmental branches of the right lower lobe pulmonary artery. Non-massive PE without right heart strain."
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Communication/comm-historical-001"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:task-overdue-001",
+      "resource": {
+        "resourceType": "Task",
+        "id": "task-overdue-001",
+        "status": "requested",
+        "intent": "order",
+        "priority": "stat",
+        "code": {
+          "coding": [
+            {
+              "system": "http://critcom/task-type",
+              "code": "critical-result-ack"
+            }
+          ],
+          "text": "Critical result acknowledgment"
+        },
+        "focus": {
+          "reference": "Communication/comm-historical-001"
+        },
+        "for": {
+          "reference": "Patient/patient-002"
+        },
+        "authoredOn": "2026-05-04T05:00:00+00:00",
+        "lastModified": "2026-05-04T05:00:00+00:00",
+        "owner": {
+          "reference": "Practitioner/practitioner-002"
+        },
+        "restriction": {
+          "repetitions": 1,
+          "period": {
+            "start": "2026-05-04T05:00:00+00:00",
+            "end": "2026-05-05T05:00:00+00:00"
+          }
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Task/task-overdue-001"
+      }
+    }
+  ]
+}

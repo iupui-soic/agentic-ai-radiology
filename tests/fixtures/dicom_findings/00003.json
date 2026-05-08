@@ -1,0 +1,10 @@
+{
+  "accession_number": "00003",
+  "patient_dicom_id": "AV35674",
+  "signed_at": "2026-05-06T18:45:00+00:00",
+  "radiologist": "synthetic-radiologist",
+  "report_text": "Findings: Acute pulmonary emboli involving segmental and subsegmental branches of the right lower lobe pulmonary artery. No central PE. No imaging signs of right heart strain — RV/LV ratio within normal limits. No pleural effusion. Lung parenchyma is otherwise unremarkable. Impression: Acute subsegmental and segmental right lower lobe pulmonary embolism without right heart strain.",
+  "ordering_practitioner_id": "practitioner-002",
+  "service_request_id": "sr-002",
+  "patient_id": "patient-002"
+}
