@@ -7,6 +7,7 @@ Mirrors the pattern from po-adk-python/shared/middleware.py.
 
 from __future__ import annotations
 
+import hmac
 import json
 import logging
 import os
@@ -17,14 +18,27 @@ from starlette.responses import JSONResponse, Response
 
 logger = logging.getLogger(__name__)
 
-# Override in production via env vars or a secrets manager
-VALID_API_KEYS: set[str] = {
-    k for k in [
-        os.getenv("CRITCOM_API_KEY", "dev-key-please-change"),
-        os.getenv("CRITCOM_API_KEY_SECONDARY"),
-    ]
-    if k
-}
+
+def _load_api_keys() -> set[str]:
+    """Valid keys come only from env — no baked-in default.
+
+    A hardcoded fallback would mean a deployment that enables auth but forgets
+    to set a key still accepts a key published in this repo. Better to have no
+    valid keys (and refuse requests) than a public one.
+    """
+    return {
+        k
+        for k in (os.getenv("CRITCOM_API_KEY"), os.getenv("CRITCOM_API_KEY_SECONDARY"))
+        if k
+    }
+
+
+VALID_API_KEYS: set[str] = _load_api_keys()
+
+
+def _key_accepted(provided: str) -> bool:
+    """Constant-time membership check to avoid leaking key length/prefix via timing."""
+    return any(hmac.compare_digest(provided, valid) for valid in VALID_API_KEYS)
 
 
 class ApiKeyMiddleware(BaseHTTPMiddleware):
@@ -41,11 +55,16 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         if self.require_api_key:
+            if not VALID_API_KEYS:
+                logger.error("security_misconfigured_no_api_key_set path=%s", request.url.path)
+                return JSONResponse(
+                    {"error": "Server auth misconfigured: no API key set"}, status_code=503
+                )
             provided = request.headers.get("x-api-key") or request.headers.get("X-API-Key")
             if not provided:
                 logger.warning("security_rejected_missing_api_key path=%s", request.url.path)
                 return JSONResponse({"error": "X-API-Key header required"}, status_code=401)
-            if provided not in VALID_API_KEYS:
+            if not _key_accepted(provided):
                 logger.warning("security_rejected_invalid_api_key path=%s", request.url.path)
                 return JSONResponse({"error": "Invalid API key"}, status_code=403)
 
