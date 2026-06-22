@@ -12,7 +12,7 @@ ACR-defined timeframe.
 
 ```bash
 echo 'GOOGLE_API_KEY=AIza...' > .env     # free key: https://aistudio.google.com/apikey
-docker compose up -d                     # FHIR + DICOM + auto-seed + agent
+docker compose up -d                     # agent + HAPI (FHIR auto-seeded) + Orthanc
 ```
 
 The agent listens on **`http://localhost:8002`**. Check it's up:
@@ -35,6 +35,13 @@ curl -X POST http://localhost:8002/ \
 
 More demo scenarios (Cat3 stop-path, DICOM worklist, escalation, audit trail)
 live in **[POSTMAN_TESTING.md](POSTMAN_TESTING.md)**.
+
+> **DICOM scenarios need a one-time worklist seed** — only FHIR is auto-seeded.
+> With the package installed (`pip install -e .`), run `critcom-seed-dicom-dcmtk`
+> to convert the DCMTK reference worklist fixtures into `orthanc-worklists/`
+> (git-ignored; Orthanc reads them live, no restart needed). Needs `git` + network.
+> For reproducible accessions, pin `CRITCOM_DCMTK_REF` to the commit the seeder
+> prints rather than the default `master`.
 
 ## How it works
 
