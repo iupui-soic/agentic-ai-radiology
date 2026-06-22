@@ -87,7 +87,7 @@ class RadiologyClassifier:
         genai.configure(api_key=key)
 
         self._genai = genai
-        self._model_name = os.getenv("CRITCOM_LLM_MODEL", "gemini-2.0-flash")
+        self._model_name = os.getenv("CRITCOM_LLM_MODEL", "gemini-2.5-flash-lite")
         self._temperature = float(os.getenv("CRITCOM_LLM_TEMPERATURE", "0.0"))
         self._max_tokens = int(os.getenv("CRITCOM_LLM_MAX_TOKENS", "1024"))
 

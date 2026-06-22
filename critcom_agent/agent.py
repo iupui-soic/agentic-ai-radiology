@@ -106,7 +106,7 @@ def build_agent():
             "google-adk is required to build the agent. Install with: pip install google-adk"
         ) from e
 
-    model = _wrap_model(os.getenv("CRITCOM_LLM_MODEL", "gemini-2.0-flash"))
+    model = _wrap_model(os.getenv("CRITCOM_LLM_MODEL", "gemini-2.5-flash-lite"))
     extension_uri = os.getenv(
         "CRITCOM_FHIR_EXTENSION_URI",
         "https://github.com/iupui-soic/agentic-ai-radiology/schemas/a2a/v1/fhir-context",
