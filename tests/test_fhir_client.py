@@ -147,3 +147,95 @@ class TestFHIRError:
         err = FHIRError(404, "Resource not found")
         assert "404" in str(err)
         assert "Resource not found" in str(err)
+
+
+# ---------------------------------------------------------------------------
+# search_audit — by ServiceRequest and by Patient
+# ---------------------------------------------------------------------------
+
+def _bundle(*resources: dict) -> dict:
+    return {
+        "resourceType": "Bundle",
+        "type": "searchset",
+        "entry": [{"resource": r} for r in resources],
+    }
+
+
+_COMM = {
+    "resourceType": "Communication",
+    "id": "comm-1",
+    "status": "in-progress",
+    "subject": {"reference": "Patient/patient-002"},
+    "payload": [{"contentString": "Subsegmental PE"}],
+}
+_TASK = {"resourceType": "Task", "id": "task-1", "status": "requested"}
+
+
+class TestSearchAudit:
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_by_service_request_uses_based_on(self, client):
+        comm_route = respx.get(
+            f"{BASE_URL}/Communication", params={"based-on": "ServiceRequest/sr-002"}
+        ).mock(return_value=Response(200, json=_bundle(_COMM)))
+        respx.get(f"{BASE_URL}/Task").mock(return_value=Response(200, json=_bundle(_TASK)))
+
+        audit = await client.search_audit(service_request_id="sr-002")
+        assert comm_route.called
+        assert len(audit["communications"]) == 1
+        assert len(audit["tasks"]) == 1
+
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_by_patient_uses_subject(self, client):
+        comm_route = respx.get(
+            f"{BASE_URL}/Communication", params={"subject": "Patient/patient-002"}
+        ).mock(return_value=Response(200, json=_bundle(_COMM)))
+        respx.get(f"{BASE_URL}/Task").mock(return_value=Response(200, json=_bundle(_TASK)))
+
+        audit = await client.search_audit(patient_id="patient-002")
+        assert comm_route.called
+        assert len(audit["communications"]) == 1
+        assert len(audit["tasks"]) == 1
+
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_no_identifiers_returns_empty(self, client):
+        audit = await client.search_audit()
+        assert audit == {"communications": [], "tasks": []}
+
+
+# ---------------------------------------------------------------------------
+# from_env — per-request context beats env, and clears (no stale token bleed)
+# ---------------------------------------------------------------------------
+
+class TestFromEnvContext:
+    @pytest.fixture(autouse=True)
+    def _clear_context(self):
+        from critcom.fhir import context
+        context.set_fhir_context(fhir_url=None, fhir_token=None)
+        yield
+        context.set_fhir_context(fhir_url=None, fhir_token=None)
+
+    @pytest.mark.asyncio
+    async def test_context_overrides_env(self, monkeypatch):
+        from critcom.fhir import context
+        from critcom.fhir.client import FHIRClient
+
+        monkeypatch.setenv("CRITCOM_FHIR_BASE_URL", "http://default/fhir")
+        context.set_fhir_context(fhir_url="http://tenant-a/fhir", fhir_token="tok-a")
+        async with FHIRClient.from_env() as c:
+            assert c._base_url == "http://tenant-a/fhir"
+            assert c._client.headers.get("Authorization") == "Bearer tok-a"
+
+    @pytest.mark.asyncio
+    async def test_cleared_context_falls_back_to_env_without_stale_token(self, monkeypatch):
+        from critcom.fhir import context
+        from critcom.fhir.client import FHIRClient
+
+        monkeypatch.setenv("CRITCOM_FHIR_BASE_URL", "http://default/fhir")
+        monkeypatch.delenv("CRITCOM_FHIR_BEARER_TOKEN", raising=False)
+        context.set_fhir_context(fhir_url=None, fhir_token=None)
+        async with FHIRClient.from_env() as c:
+            assert c._base_url == "http://default/fhir"
+            assert "Authorization" not in c._client.headers

@@ -85,7 +85,7 @@ Key `.env` settings (see `.env.example` for all): `GOOGLE_API_KEY`,
 
 ## Testing & evaluation
 
-- **Unit tests** — `pytest` runs 45 tests with no network or LLM calls
+- **Unit tests** — `pytest` runs 60 tests with no network or LLM calls
   (the FHIR client is mocked with `respx`); `pytest -m llm` adds the live-LLM
   classifier tests (needs `GOOGLE_API_KEY`).
 - **Performance eval** — a 5-metric harness (ACR accuracy, trajectory F1,
