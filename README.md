@@ -69,13 +69,22 @@ comes from a deterministic tool reading FHIR/DICOM, never from the model.
 docker compose up --build -d         # HAPI :8081, Orthanc :8042/:4242, agent :8002
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt && pip install -e .
-pytest                               # tests run with no LLM calls; add -m llm for the 2 that do
 ```
 
 Key `.env` settings (see `.env.example` for all): `GOOGLE_API_KEY`,
-`CRITCOM_LLM_MODEL` (use `gemini-2.5-flash-lite`; the default free tier for
-`gemini-2.0-flash` exhausts fast), and `CRITCOM_REQUIRE_API_KEY=false` for
-open local demos.
+`CRITCOM_LLM_MODEL` (defaults to `gemini-2.5-flash-lite`; avoid
+`gemini-2.0-flash`, whose free-tier quota is 0 on most keys), and
+`CRITCOM_REQUIRE_API_KEY=false` for open local demos.
+
+## Testing & evaluation
+
+- **Unit tests** — `pytest` runs 45 tests with no network or LLM calls
+  (the FHIR client is mocked with `respx`); `pytest -m llm` adds the live-LLM
+  classifier tests (needs `GOOGLE_API_KEY`).
+- **Performance eval** — a 5-metric harness (ACR accuracy, trajectory F1,
+  FHIR state validity, deadline compliance, pass^k) lives in `eval/`. Run it
+  with `docker compose --profile eval run --rm critcom-eval`. See
+  [eval/README.md](eval/README.md).
 
 ## License
 
