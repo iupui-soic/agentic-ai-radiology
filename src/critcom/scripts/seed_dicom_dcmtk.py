@@ -24,6 +24,11 @@ Env vars:
 The script is idempotent — it caches the DCMTK clone under the cache dir
 and re-converts fixtures into .wl files on each run. Safe to re-run after
 git pulls; safe to run on a fresh checkout.
+
+Reproducibility: the default ref is ``master``, so the OFFIS fixture set (and
+thus the worklist accession numbers the demo/eval rely on) can drift if DCMTK
+upstream changes. For a fixed, citable run, set CRITCOM_DCMTK_REF to the commit
+SHA this script prints ("Cite as ... @ <sha>") instead of ``master``.
 """
 
 from __future__ import annotations
