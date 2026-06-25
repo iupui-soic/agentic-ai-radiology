@@ -258,6 +258,96 @@ def fetch_fhir_records(sr: str) -> dict:
     return {"communications": comms, "tasks": tasks}
 
 
+def _display_name(client: httpx.Client, base: str, ref: str, cache: dict) -> str:
+    """Resolve a Patient/Practitioner reference to a human name (cached per call)."""
+    if not ref or "/" not in ref:
+        return ref or "?"
+    if ref in cache:
+        return cache[ref]
+    name = ref
+    try:
+        r = client.get(f"{base}/{ref}")
+        if r.status_code == 200:
+            n = (r.json().get("name") or [{}])[0]
+            if n.get("text"):
+                name = n["text"]
+            elif n.get("given") or n.get("family"):
+                name = " ".join(n.get("given", []) + [n.get("family", "")]).strip()
+    except httpx.HTTPError:
+        pass
+    cache[ref] = name
+    return name
+
+
+@st.cache_data(ttl=15, show_spinner=False)
+def fetch_recent_communications(limit: int = 12) -> list[dict]:
+    """Every recent critical-result communication in FHIR, newest first —
+    regardless of whether it was fired from this UI or the Orthanc viewer.
+    Each row is joined to its acknowledgment Task so we can show ack status."""
+    base = FHIR_URL.rstrip("/")
+    rows: list[dict] = []
+    namecache: dict = {}
+    with httpx.Client(timeout=10.0, headers={"Accept": "application/fhir+json"}) as client:
+        cr = client.get(f"{base}/Communication", params={"_sort": "-sent", "_count": limit})
+        cr.raise_for_status()
+        comms = [e.get("resource", {}) for e in (cr.json().get("entry") or [])]
+        for c in comms:
+            cid = c.get("id")
+            task = None
+            if cid:
+                tr = client.get(f"{base}/Task", params={"focus": f"Communication/{cid}"})
+                if tr.status_code == 200:
+                    tents = tr.json().get("entry") or []
+                    if tents:
+                        task = tents[0].get("resource", {})
+            subj_ref = (c.get("subject") or {}).get("reference", "?")
+            rcpt_ref = (c.get("recipient") or [{}])[0].get("reference", "?")
+            rows.append({
+                "id": cid,
+                "acr": (c.get("category") or [{}])[0].get("text", "?"),
+                "subject": _display_name(client, base, subj_ref, namecache),
+                "recipient": _display_name(client, base, rcpt_ref, namecache),
+                "sent": c.get("sent", ""),
+                "status": c.get("status", "?"),
+                "task_id": (task or {}).get("id"),
+                "task_status": (task or {}).get("status"),
+                "deadline": ((task or {}).get("restriction") or {}).get("period", {}).get("end", ""),
+            })
+    return rows
+
+
+def render_inbox():
+    st.markdown('<div class="sec">🔔 Critical Communications Inbox '
+                '<span class="muted">· live from FHIR · everything sent from the viewer or this UI lands here</span></div>',
+                unsafe_allow_html=True)
+    try:
+        rows = fetch_recent_communications()
+    except httpx.HTTPError as e:
+        st.warning(f"Couldn't read the inbox from FHIR: {e}")
+        return
+    if not rows:
+        st.info("No critical communications yet. Send one from the Orthanc viewer or the worklist below.")
+        return
+    cards = ""
+    for r in rows:
+        cat = r["acr"] or "?"
+        bcls = cat.lower() if str(cat).lower().startswith("cat") else "audit"
+        ack = r.get("task_status")
+        if ack == "completed":
+            ackbadge = '<span class="badge b-routine">ACKNOWLEDGED</span>'
+        elif ack:
+            ackbadge = '<span class="badge b-stat">AWAITING ACK</span>'
+        else:
+            ackbadge = ""
+        cards += (f'<div class="fcard"><div class="t">📣 Communication {r["id"]} '
+                  f'<span class="badge b-{bcls}">{html.escape(str(cat))}</span> {ackbadge}</div>'
+                  f'<div class="s">{html.escape(r["subject"])} → notified {html.escape(r["recipient"])}</div>'
+                  f'<div class="s">sent {html.escape(r["sent"][:19].replace("T"," "))}'
+                  + (f' · ack deadline {html.escape(r["deadline"][:19].replace("T"," "))}' if r["deadline"] else "")
+                  + (f' · Task {r["task_id"]}' if r["task_id"] else "") + "</div></div>")
+    st.markdown(cards, unsafe_allow_html=True)
+
+
 def _study_id_by_accession(accession: str) -> str | None:
     with httpx.Client(timeout=6.0, auth=(ORTHANC_USER, ORTHANC_PW)) as c:
         r = c.post(f"{ORTHANC_INTERNAL.rstrip('/')}/tools/find",
@@ -335,6 +425,7 @@ def render_result(L: dict):
                     ack = call_agent(f"Call track_acknowledgment_tool with action='mark_acknowledged' and "
                                      f"task_id='{f['task']}'. The ordering physician has acknowledged the finding.")
                 st.session_state["last"]["ack"] = ack["text"]
+                fetch_recent_communications.clear()
         if st.session_state.get("last", {}).get("ack"):
             st.success("✅ " + st.session_state["last"]["ack"][:200])
         st.markdown('<div class="sec">🗂️ FHIR records (live from HAPI)</div>', unsafe_allow_html=True)
@@ -389,11 +480,15 @@ st.markdown('<div class="hero"><h1>🩻 CritCom</h1>'
             'classify (ACR), notify the ordering physician, track acknowledgment, escalate on timeout. '
             'Gemini on Vertex · FHIR R4 · DICOM.</p></div>', unsafe_allow_html=True)
 
+render_inbox()
+st.divider()
+
 hc1, hc2, hc3 = st.columns([3, 1, 1])
 hc1.markdown('<div class="sec">📋 Modality Worklist — live from Orthanc, sorted by priority</div>', unsafe_allow_html=True)
 hc2.link_button("🩻  Open DICOM viewer", VIEWER_PUBLIC.rstrip("/") + "/ui/app/", use_container_width=True)
 if hc3.button("🔄  Refresh", use_container_width=True):
     fetch_worklist.clear()
+    fetch_recent_communications.clear()
 
 try:
     worklist = fetch_worklist()
@@ -440,6 +535,7 @@ for entry in worklist:
                                 "res": res, "name": f"{entry['patient_name']} · acc {entry['accession']}",
                                 "sr": sr_id, "study": entry["accession"],
                             }
+                            fetch_recent_communications.clear()
 
 if "last" in st.session_state:
     st.divider()
