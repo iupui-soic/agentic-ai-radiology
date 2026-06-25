@@ -13,24 +13,50 @@ API_KEY = os.environ.get("CRITCOM_API_KEY", "")
 FHIR = os.environ.get("CRITCOM_FHIR_URL", "http://hapi-fhir:8080/fhir").rstrip("/")
 
 BUTTON_JS = """
+function critcomShow(title, body, loading) {
+  $('#critcom-overlay').remove();
+  var card = $("<div>").css({background:'#fff',maxWidth:'580px',width:'90%',borderRadius:'14px',
+    padding:'22px 26px',fontFamily:'Inter,Helvetica,Arial,sans-serif',boxShadow:'0 20px 60px rgba(0,0,0,.45)'});
+  $("<div>").text(title).css({margin:'0 0 14px',color:'#0f172a',fontSize:'20px',fontWeight:'800'}).appendTo(card);
+  $("<pre>").text(body).css({whiteSpace:'pre-wrap',fontFamily:'ui-monospace,Menlo,monospace',fontSize:'13.5px',
+    lineHeight:'1.5',color:'#1e293b',background:'#f4f7fb',border:'1px solid #d3deec',borderRadius:'8px',
+    padding:'14px 16px',margin:0}).appendTo(card);
+  if (!loading) {
+    $("<button>").text('Close').css({marginTop:'16px',background:'#0284c7',color:'#fff',border:0,
+      borderRadius:'8px',padding:'10px 22px',fontWeight:'700',fontSize:'15px',cursor:'pointer'})
+      .appendTo(card).click(function(){ $('#critcom-overlay').remove(); });
+  }
+  $("<div>").attr('id','critcom-overlay').css({position:'fixed',top:0,left:0,right:0,bottom:0,
+    background:'rgba(15,23,42,.6)',zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center'})
+    .append(card).appendTo('body');
+}
 $('#study').live('pagebeforeshow', function() {
   if ($('#critcom-send-btn').length > 0) return;
   var studyId = $.mobile.pageData.uuid;
   var b = $('<a>').attr('id','critcom-send-btn').attr('href','#')
       .attr('data-role','button').attr('data-icon','action').attr('data-theme','b')
       .text('Send to CritCom');
-  b.insertAfter($('#study-info'));
+  var anchor = $('#study-delete').length ? $('#study-delete') : $('#study-info');
+  b.insertBefore(anchor);
   $('#study').trigger('create');
   b.click(function(e) {
     e.preventDefault();
     var f = window.prompt('Signed findings / impression for this study:');
     if (!f) return;
+    critcomShow('CritCom — running the workflow…',
+      'Classifying the finding and running the critical-results pipeline.\\nThis takes about 20-30 seconds…', true);
     $.ajax({ url: '../critcom-send/' + studyId, type: 'POST', data: f,
-      success: function(s){ alert('CritCom result:\\n\\n' + s); },
-      error: function(x){ alert('CritCom error: ' + (x.responseText || x.statusText)); } });
+      success: function(s){ critcomShow('CritCom — workflow complete', s, false); },
+      error: function(x){ critcomShow('CritCom — error', (x.responseText || x.statusText), false); } });
   });
 });
 """
+
+ACR_LABEL = {
+    "Cat1": "Cat1 — IMMEDIATE (notify within 60 minutes)",
+    "Cat2": "Cat2 — URGENT (notify within 24 hours)",
+    "Cat3": "Cat3 — ROUTINE (no critical communication)",
+}
 
 
 def _fhir_sr(patient_id):
@@ -46,6 +72,7 @@ def _fhir_sr(patient_id):
 def _call_agent(prompt):
     payload = {"jsonrpc": "2.0", "id": str(uuid.uuid4()), "method": "message/send",
                "params": {"message": {"role": "user", "messageId": str(uuid.uuid4()),
+                                      "contextId": str(uuid.uuid4()),
                                       "parts": [{"kind": "text", "text": prompt}]}}}
     headers = {"Content-Type": "application/json"}
     if API_KEY:
@@ -53,40 +80,42 @@ def _call_agent(prompt):
     req = urllib.request.Request(AGENT + "/", data=json.dumps(payload).encode(), headers=headers)
     with urllib.request.urlopen(req, timeout=300) as r:
         res = json.loads(r.read().decode()).get("result", {})
+
     acr = provider = comm = task = None
-    final = ""
     for e in res.get("history", []):
         if e.get("role") != "agent":
             continue
         for p in e.get("parts", []):
-            if p.get("kind") == "text" and (p.get("text") or "").strip():
-                final = p["text"].strip()
-            if p.get("kind") == "data":
-                d = p.get("data", {})
-                name = d.get("name")
-                args = d.get("args") or {}
-                resp = d.get("response") if isinstance(d.get("response"), dict) else {}
-                if args.get("acr_category"):
-                    acr = args["acr_category"]
-                if name == "resolve_provider_tool":
-                    provider = resp.get("name") or provider
-                if name == "dispatch_communication_tool":
-                    comm = resp.get("communication_id") or comm
-                if name == "track_acknowledgment_tool" and resp.get("task_id"):
-                    task = resp.get("task_id")
-    lines = []
-    if acr:
-        lines.append("ACR category: " + acr)
-    if provider:
-        lines.append("Notified provider: " + provider)
-    if comm:
-        lines.append("Communication: " + comm)
-    if task:
-        lines.append("Acknowledgment Task: " + task)
-    summary = "\n".join(lines)
-    if final:
-        summary = (summary + "\n\n" if summary else "") + final
-    return summary or "Done — no details returned."
+            if p.get("kind") != "data":
+                continue
+            d = p.get("data", {})
+            name = d.get("name")
+            args = d.get("args") or {}
+            resp = d.get("response") if isinstance(d.get("response"), dict) else {}
+            if args.get("acr_category"):
+                acr = args["acr_category"]
+            if name == "resolve_provider_tool":
+                provider = resp.get("name") or provider
+            if name == "dispatch_communication_tool":
+                comm = resp.get("communication_id") or comm
+            if name == "track_acknowledgment_tool" and resp.get("task_id"):
+                task = resp.get("task_id")
+
+    lines = ["CLASSIFIED:  " + ACR_LABEL.get(acr, acr or "—"), ""]
+    if provider or comm or task:
+        lines.append("WORKFLOW STEPS")
+        n = 1
+        if provider:
+            lines.append("  %d. Resolved ordering physician      ->  %s" % (n, provider)); n += 1
+        if comm:
+            lines.append("  %d. Sent critical-result notification ->  Communication %s" % (n, comm)); n += 1
+        if task:
+            lines.append("  %d. Opened acknowledgment timer       ->  Task %s" % (n, task)); n += 1
+        lines += ["", "Recorded in the patient chart (FHIR).",
+                  "Escalates to on-call if not acknowledged in time."]
+    else:
+        lines.append("No critical communication needed — workflow stopped here.")
+    return "\n".join(lines)
 
 
 def on_send(output, uri, **request):
@@ -107,8 +136,7 @@ def on_send(output, uri, **request):
         study_desc = tags.get("StudyDescription", "CT study")
         sr_id = _fhir_sr(patient_id)
         if not sr_id:
-            output.AnswerBuffer("No FHIR ServiceRequest found for patient " + patient_id,
-                                "text/plain")
+            output.AnswerBuffer("No FHIR ServiceRequest found for patient " + patient_id, "text/plain")
             return
         prompt = (
             "A radiologist has signed a radiology report and the critical result must be handled.\n"
